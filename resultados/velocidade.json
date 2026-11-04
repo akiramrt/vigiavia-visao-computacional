@@ -1,0 +1,77 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "cpu": "AMD Ryzen 9 5900X (12 núcleos)",
+  "imgsz": 640,
+  "linhas": [
+    {
+      "modelo": "E1_yolo26n",
+      "execucao": "PyTorch GPU FP16",
+      "ms_media": 16.13,
+      "ms_p95": 20.11,
+      "fps": 62.0
+    },
+    {
+      "modelo": "E1_yolo26n",
+      "execucao": "PyTorch GPU FP32",
+      "ms_media": 15.3,
+      "ms_p95": 20.55,
+      "fps": 65.4
+    },
+    {
+      "modelo": "E1_yolo26n",
+      "execucao": "PyTorch CPU FP32",
+      "ms_media": 35.54,
+      "ms_p95": 38.07,
+      "fps": 28.1
+    },
+    {
+      "modelo": "E2_yolo11n",
+      "execucao": "PyTorch GPU FP16",
+      "ms_media": 16.14,
+      "ms_p95": 19.04,
+      "fps": 62.0
+    },
+    {
+      "modelo": "E2_yolo11n",
+      "execucao": "PyTorch GPU FP32",
+      "ms_media": 12.88,
+      "ms_p95": 14.3,
+      "fps": 77.6
+    },
+    {
+      "modelo": "E2_yolo11n",
+      "execucao": "PyTorch CPU FP32",
+      "ms_media": 35.35,
+      "ms_p95": 36.82,
+      "fps": 28.3
+    },
+    {
+      "modelo": "E3_yolo26s",
+      "execucao": "PyTorch GPU FP16",
+      "ms_media": 14.91,
+      "ms_p95": 15.59,
+      "fps": 67.1
+    },
+    {
+      "modelo": "E3_yolo26s",
+      "execucao": "PyTorch GPU FP32",
+      "ms_media": 14.07,
+      "ms_p95": 14.62,
+      "fps": 71.1
+    },
+    {
+      "modelo": "E3_yolo26s",
+      "execucao": "PyTorch CPU FP32",
+      "ms_media": 71.99,
+      "ms_p95": 76.09,
+      "fps": 13.9
+    },
+    {
+      "modelo": "produção (ONNX)",
+      "execucao": "ONNX Runtime CPU",
+      "ms_media": 25.56,
+      "ms_p95": 28.16,
+      "fps": 39.1
+    }
+  ]
+}

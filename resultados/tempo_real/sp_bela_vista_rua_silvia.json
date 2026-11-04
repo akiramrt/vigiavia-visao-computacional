@@ -1,0 +1,24 @@
+{
+  "fonte": "C:\\Users\\eduar\\AppData\\Local\\Temp\\claude\\5c076af41ba4acbc\\6e99c3b2-8eac-48d7-b7f2-d6d1e0f28f47\\scratchpad\\videos_fonte\\sp_bela_vista_rua_silvia.webm",
+  "modelo": "vigiavia_buracos",
+  "limiar": 0.305,
+  "quadros": 787,
+  "fps_fonte": 30.0,
+  "tempo_total_s": 67.3,
+  "ms_por_quadro_pipeline": 74.2,
+  "ms_p95": 146.2,
+  "fps_pipeline": 13.5,
+  "trilhas": 18,
+  "trilhas_duplicadas_suprimidas": 4,
+  "buracos_confirmados": 7,
+  "creditos": {
+    "arquivo": "sp_bela_vista_rua_silvia.webm",
+    "titulo_commons": "File:Buraco na rua Sílvia, 276 (Bela Vista).webm",
+    "pagina": "https://commons.wikimedia.org/wiki/File%3ABuraco_na_rua_S%C3%ADlvia%2C_276_%28Bela_Vista%29.webm",
+    "autor": "Daniel Fraga",
+    "licenca": "CC BY 3.0",
+    "data": "2010-04-11",
+    "descricao": "Local: rua Sílvia, 276 - Bela Vista - São Paulo - SP - 01331-010\nO buraco está um pouco antes da travessia de pedestres.",
+    "resolucao": "1280x720"
+  }
+}

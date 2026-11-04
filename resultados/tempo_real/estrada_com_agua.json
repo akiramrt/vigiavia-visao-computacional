@@ -1,0 +1,24 @@
+{
+  "fonte": "C:\\Users\\eduar\\AppData\\Local\\Temp\\claude\\5c076af41ba4acbc\\6e99c3b2-8eac-48d7-b7f2-d6d1e0f28f47\\scratchpad\\videos_fonte\\estrada_com_agua.webm",
+  "modelo": "vigiavia_buracos",
+  "limiar": 0.305,
+  "quadros": 869,
+  "fps_fonte": 30.0,
+  "tempo_total_s": 60.9,
+  "ms_por_quadro_pipeline": 54.7,
+  "ms_p95": 77.6,
+  "fps_pipeline": 18.3,
+  "trilhas": 22,
+  "trilhas_duplicadas_suprimidas": 2,
+  "buracos_confirmados": 15,
+  "creditos": {
+    "arquivo": "estrada_com_agua.webm",
+    "titulo_commons": "File:Rainwater-Filled Potholes on a Community Road.webm",
+    "pagina": "https://commons.wikimedia.org/wiki/File%3ARainwater-Filled_Potholes_on_a_Community_Road.webm",
+    "autor": "Knowledge and philosophy",
+    "licenca": "CC BY-SA 4.0",
+    "data": "2026-06-21",
+    "descricao": "A section of an unpaved community road with potholes filled by rainwater after rainfall. The standing water illustrates how inadequate road drainage affects transportation, public safety, and access to essential services",
+    "resolucao": "1920x1080"
+  }
+}

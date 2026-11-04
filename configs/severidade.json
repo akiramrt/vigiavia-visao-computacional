@@ -1,0 +1,7 @@
+{
+  "metodo": "tercis do índice de severidade nas caixas de treino",
+  "n_caixas": 4249,
+  "horizonte": 0.35,
+  "limiar_media": 0.00919,
+  "limiar_alta": 0.02956
+}

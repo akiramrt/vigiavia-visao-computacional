@@ -1,0 +1,62 @@
+{
+  "fonte": "RDD2022 oficial (CRDDC'2022) — figshare doi:10.6084/m9.figshare.21431547",
+  "licenca": "CC BY 4.0 (figshare) / CC BY-SA 4.0 (repositório oficial) — usamos os termos mais restritivos",
+  "classe": {
+    "0": "buraco (D40)"
+  },
+  "paises": [
+    "Japan",
+    "India",
+    "China_MotorBike",
+    "Czech",
+    "United_States"
+  ],
+  "neg_ratio": 0.25,
+  "bloco_split": 20,
+  "seed": 42,
+  "classes_no_rdd_selecionado": {
+    "D00": 16020,
+    "D20": 9856,
+    "D10": 8837,
+    "D40": 5997,
+    "D44": 5057,
+    "D50": 3581,
+    "D43": 793,
+    "Repair": 277,
+    "D01": 179,
+    "D11": 45,
+    "D0w0": 1
+  },
+  "splits": {
+    "train": {
+      "imagens": 2960,
+      "imagens_com_buraco": 2385,
+      "caixas_buraco": 4249,
+      "imagens_Japan": 1194,
+      "imagens_India": 1377,
+      "imagens_China_MotorBike": 154,
+      "imagens_Czech": 131,
+      "imagens_United_States": 104
+    },
+    "test": {
+      "imagens": 622,
+      "imagens_com_buraco": 489,
+      "caixas_buraco": 910,
+      "imagens_Japan": 258,
+      "imagens_India": 274,
+      "imagens_China_MotorBike": 22,
+      "imagens_Czech": 42,
+      "imagens_United_States": 26
+    },
+    "val": {
+      "imagens": 610,
+      "imagens_com_buraco": 480,
+      "caixas_buraco": 838,
+      "imagens_Japan": 286,
+      "imagens_India": 261,
+      "imagens_China_MotorBike": 29,
+      "imagens_Czech": 19,
+      "imagens_United_States": 15
+    }
+  }
+}

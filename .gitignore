@@ -1,0 +1,29 @@
+# dados e artefatos pesados (reproduzíveis pelos scripts)
+datasets/
+runs/
+demo/videos_fonte/
+demo/evidencias/
+demo/clipes/
+demo/*.mp4
+demo/eventos*.jsonl
+docs/relatorio/.chrome/
+dados/
+*.part
+
+# pesos intermediários (os pesos finais em modelos/ SÃO versionados)
+yolo*.pt
+modelos/*.onnx.data
+
+# Python / ambiente
+__pycache__/
+*.py[cod]
+.venv/
+venv*/
+.ipynb_checkpoints/
+.pytest_cache/
+.env
+*.env
+
+# sistema
+.DS_Store
+Thumbs.db

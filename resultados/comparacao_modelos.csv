@@ -1,0 +1,4 @@
+experimento,pesos_iniciais,parametros_M,treino_min,val_mAP50,val_mAP50_95,val_F1,limiar,teste_mAP50,teste_mAP50_95,teste_precisao,teste_revocacao,inferencia_ms_gpu
+E1_yolo26n,yolo26n.pt,2.53,32.9,0.5878,0.2549,0.5867,0.305,0.5848,0.2589,0.6699,0.5264,3.154
+E2_yolo11n,yolo11n.pt,2.6,34.4,0.5646,0.2442,0.5612,0.261,0.5612,0.2492,0.6337,0.5209,2.909
+E3_yolo26s,yolo26s.pt,9.95,42.5,0.6042,0.2637,0.5918,0.295,0.5887,0.2603,0.6078,0.556,4.728

@@ -1,0 +1,46 @@
+@page { size: A4; margin: 17mm 16mm 18mm 16mm;
+  @bottom-right { content: counter(page); font: 9pt "Segoe UI", Arial, sans-serif; color: #6b7783; }
+  @bottom-left { content: "VigiaVia · Applied Computer Vision · FIAP GS 2026.2"; font: 8.5pt "Segoe UI", Arial, sans-serif; color: #8a96a2; }
+}
+@page :first { @bottom-right { content: none; } @bottom-left { content: none; } }
+:root { --tinta: #13202b; --suave: #4d5b68; --linha: #d5dbe1; --acento: #c77700; --acento-claro: #fff4e0; --azul: #2a6fdb; }
+* { box-sizing: border-box; }
+html { font: 10.6pt/1.5 "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--tinta); }
+body { margin: 0; }
+h1, h2, h3 { line-height: 1.2; break-after: avoid; }
+h2 { font-size: 16pt; margin: 22pt 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--acento); }
+h3 { font-size: 12pt; margin: 14pt 0 5pt; color: #1d3a57; }
+p { margin: 0 0 7pt; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 8pt; padding-left: 18pt; } li { margin-bottom: 3pt; }
+a { color: var(--azul); text-decoration: none; }
+code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: #f2f4f6; padding: 0 3px; border-radius: 3px; }
+pre { font-family: Consolas, monospace; font-size: 8.6pt; background: #f2f4f6; padding: 8pt 10pt; border-radius: 6px; white-space: pre-wrap; break-inside: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.2pt; break-inside: avoid; }
+th, td { border-bottom: 1px solid var(--linha); padding: 4pt 6pt; text-align: left; vertical-align: top; }
+th { background: #eef2f6; font-weight: 600; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.destaque td { background: var(--acento-claro); font-weight: 600; }
+figure { margin: 8pt 0 12pt; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; max-height: 118mm; border: 1px solid var(--linha); border-radius: 4px; }
+figure.larga img { max-height: 150mm; }
+figure.dupla { display: flex; flex-wrap: wrap; gap: 8pt; align-items: flex-start; } figure.dupla div { flex: 1 1 0; min-width: 0; }
+figure.dupla img { width: 100%; max-height: 95mm; object-fit: contain; } figure.dupla figcaption { flex-basis: 100%; }
+figcaption { font-size: 8.8pt; color: var(--suave); margin-top: 4pt; text-align: center; }
+.caixa { background: #f6f8fa; border-left: 4px solid var(--acento); padding: 7pt 10pt; margin: 8pt 0 10pt; border-radius: 0 6px 6px 0; break-inside: avoid; }
+.caixa p:last-child { margin: 0; }
+.pequeno { font-size: 8.8pt; color: var(--suave); }
+.contagem { font-size: 8.5pt; color: var(--suave); text-align: right; margin-top: -4pt; }
+.quebra { break-before: page; }
+.kpis { display: flex; gap: 8pt; margin: 8pt 0 12pt; break-inside: avoid; }
+.kpi { flex: 1; border: 1px solid var(--linha); border-radius: 8px; padding: 7pt 9pt; }
+.kpi b { display: block; font-size: 17pt; color: var(--acento); } .kpi span { font-size: 8.6pt; color: var(--suave); }
+
+/* capa */
+.capa { height: 258mm; display: flex; flex-direction: column; justify-content: space-between; }
+.capa .topo { font-size: 9.5pt; letter-spacing: .14em; color: var(--suave); text-transform: uppercase; border-bottom: 3px solid var(--acento); padding-bottom: 8pt; }
+.capa h1 { font-size: 40pt; margin: 0; letter-spacing: -.01em; }
+.capa .sub { font-size: 16.5pt; color: #1d3a57; margin: 8pt 0 0; line-height: 1.3; }
+.capa .disc { font-size: 11pt; color: var(--suave); margin-top: 14pt; }
+.capa table { font-size: 11pt; width: 70%; } .capa td { border: 0; padding: 3pt 0; }
+.capa .links { font-size: 10pt; }
+.capa .rodape { font-size: 10pt; color: var(--suave); }

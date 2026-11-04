@@ -1,0 +1,15 @@
+# Rastreador do VigiaVia: BoT-SORT com compensação global de movimento da câmera (GMC).
+# A câmera (celular na mão, painel de ônibus, moto) se move o tempo todo; sem GMC, o filtro de Kalman
+# "perde" o buraco e o mesmo buraco ganha IDs novos (contagem inflada). Ver relatório, seção 5.5.
+tracker_type: botsort
+track_high_thresh: 0.25    # 1º estágio de associação
+track_low_thresh: 0.1      # 2º estágio (detecções fracas ainda mantêm a trilha viva)
+new_track_thresh: 0.3      # só abre trilha nova com confiança razoável
+track_buffer: 60           # ~2 s a 30 FPS: o buraco some atrás de um carro e volta com o mesmo ID
+match_thresh: 0.8
+fuse_score: True
+gmc_method: sparseOptFlow  # estima a homografia entre quadros por fluxo óptico esparso
+proximity_thresh: 0.5
+appearance_thresh: 0.8
+with_reid: False
+model: auto

@@ -1,0 +1,24 @@
+{
+  "fonte": "C:\\Users\\eduar\\AppData\\Local\\Temp\\claude\\5c076af41ba4acbc\\6e99c3b2-8eac-48d7-b7f2-d6d1e0f28f47\\scratchpad\\videos_fonte\\kumasi_pothole.ogv",
+  "modelo": "vigiavia_buracos",
+  "limiar": 0.305,
+  "quadros": 420,
+  "fps_fonte": 29.97,
+  "tempo_total_s": 29.0,
+  "ms_por_quadro_pipeline": 51.4,
+  "ms_p95": 74.3,
+  "fps_pipeline": 19.4,
+  "trilhas": 4,
+  "trilhas_duplicadas_suprimidas": 0,
+  "buracos_confirmados": 4,
+  "creditos": {
+    "arquivo": "kumasi_pothole.ogv",
+    "titulo_commons": "File:Pothole.ogv",
+    "pagina": "https://commons.wikimedia.org/wiki/File%3APothole.ogv",
+    "autor": "Amuzujoe",
+    "licenca": "CC BY-SA 4.0",
+    "data": "2020-03-12",
+    "descricao": "This pothole was in the middle of the road in Kumasi.",
+    "resolucao": "1920x1080"
+  }
+}

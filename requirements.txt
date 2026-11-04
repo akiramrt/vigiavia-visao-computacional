@@ -1,0 +1,23 @@
+# VigiaVia — componente de Visão Computacional
+# PyTorch com GPU (NVIDIA): instale antes, conforme https://pytorch.org/get-started/locally/
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+# Sem GPU, o pip instala a versão CPU automaticamente pelas linhas abaixo.
+torch==2.11.0
+torchvision==0.26.0
+ultralytics==8.4.202
+lap==0.5.14
+opencv-python==5.0.0.93
+onnx==1.23.2
+onnxruntime==1.31.1
+onnxslim==0.1.99
+numpy==2.5.4
+pillow==13.0.0
+matplotlib==3.11.2
+pandas==3.1.1
+PyYAML==6.0.3
+requests==2.34.2
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.33
+httpx==0.28.1
+pytest==9.2.0

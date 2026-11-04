@@ -1,0 +1,152 @@
+{
+  "limiar": 0.305,
+  "limiares_brilho_V": [
+    123.9,
+    147.7
+  ],
+  "grupos": {
+    "geral": {
+      "tp": 459,
+      "fp": 193,
+      "fn": 451,
+      "precisao": 0.704,
+      "revocacao": 0.5044,
+      "f1": 0.5877
+    },
+    "país: China_MotorBike": {
+      "tp": 29,
+      "fp": 2,
+      "fn": 1,
+      "precisao": 0.9355,
+      "revocacao": 0.9667,
+      "f1": 0.9508
+    },
+    "iluminação: média": {
+      "tp": 126,
+      "fp": 53,
+      "fn": 117,
+      "precisao": 0.7039,
+      "revocacao": 0.5185,
+      "f1": 0.5972
+    },
+    "iluminação: clara": {
+      "tp": 200,
+      "fp": 88,
+      "fn": 184,
+      "precisao": 0.6944,
+      "revocacao": 0.5208,
+      "f1": 0.5952
+    },
+    "país: Czech": {
+      "tp": 20,
+      "fp": 10,
+      "fn": 26,
+      "precisao": 0.6667,
+      "revocacao": 0.4348,
+      "f1": 0.5263
+    },
+    "iluminação: escura": {
+      "tp": 133,
+      "fp": 52,
+      "fn": 150,
+      "precisao": 0.7189,
+      "revocacao": 0.47,
+      "f1": 0.5684
+    },
+    "país: India": {
+      "tp": 197,
+      "fp": 101,
+      "fn": 266,
+      "precisao": 0.6611,
+      "revocacao": 0.4255,
+      "f1": 0.5177
+    },
+    "país: Japan": {
+      "tp": 201,
+      "fp": 74,
+      "fn": 144,
+      "precisao": 0.7309,
+      "revocacao": 0.5826,
+      "f1": 0.6484
+    },
+    "país: United_States": {
+      "tp": 12,
+      "fp": 6,
+      "fn": 14,
+      "precisao": 0.6667,
+      "revocacao": 0.4615,
+      "f1": 0.5455
+    }
+  },
+  "revocacao_por_tamanho": {
+    "médio (32²–96²px)": {
+      "buracos": 517,
+      "detectados": 255,
+      "revocacao": 0.4932
+    },
+    "pequeno (<32²px)": {
+      "buracos": 210,
+      "detectados": 107,
+      "revocacao": 0.5095
+    },
+    "grande (>96²px)": {
+      "buracos": 183,
+      "detectados": 97,
+      "revocacao": 0.5301
+    }
+  },
+  "ap_por_pais": {
+    "China_MotorBike": {
+      "imagens": 22,
+      "mAP50": 0.9856,
+      "mAP50_95": 0.5669
+    },
+    "Czech": {
+      "imagens": 42,
+      "mAP50": 0.4722,
+      "mAP50_95": 0.1618
+    },
+    "India": {
+      "imagens": 274,
+      "mAP50": 0.4991,
+      "mAP50_95": 0.2009
+    },
+    "Japan": {
+      "imagens": 258,
+      "mAP50": 0.67,
+      "mAP50_95": 0.315
+    },
+    "United_States": {
+      "imagens": 26,
+      "mAP50": 0.5335,
+      "mAP50_95": 0.3002
+    }
+  },
+  "vazamento_dhash": {
+    "China_MotorBike": {
+      "imagens_teste": 22,
+      "distancia_minima_mediana": 72.0,
+      "quase_duplicatas_pct": 0.0
+    },
+    "Czech": {
+      "imagens_teste": 42,
+      "distancia_minima_mediana": 83.5,
+      "quase_duplicatas_pct": 0.0
+    },
+    "India": {
+      "imagens_teste": 274,
+      "distancia_minima_mediana": 64.0,
+      "quase_duplicatas_pct": 0.0
+    },
+    "Japan": {
+      "imagens_teste": 258,
+      "distancia_minima_mediana": 88.0,
+      "quase_duplicatas_pct": 0.0
+    },
+    "United_States": {
+      "imagens_teste": 26,
+      "distancia_minima_mediana": 87.0,
+      "quase_duplicatas_pct": 0.0
+    }
+  }
+}

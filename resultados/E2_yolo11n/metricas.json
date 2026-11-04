@@ -1,0 +1,64 @@
+{
+  "experimento": "E2_yolo11n",
+  "pesos_iniciais": "yolo11n.pt",
+  "duracao_treino_min": 34.4,
+  "parametros": {
+    "imgsz": 640,
+    "epochs": 60,
+    "patience": 20,
+    "batch": 16,
+    "optimizer": "auto",
+    "cos_lr": true,
+    "close_mosaic": 10,
+    "seed": 42,
+    "deterministic": true,
+    "workers": 8,
+    "cache": "disk",
+    "amp": true,
+    "hsv_h": 0.015,
+    "hsv_s": 0.7,
+    "hsv_v": 0.4,
+    "degrees": 0.0,
+    "translate": 0.1,
+    "scale": 0.5,
+    "fliplr": 0.5,
+    "flipud": 0.0,
+    "mosaic": 1.0,
+    "mixup": 0.0,
+    "plots": true
+  },
+  "device": "NVIDIA GeForce RTX 3070",
+  "n_parametros": 2604883,
+  "val": {
+    "precisao": 0.6120309262140554,
+    "revocacao": 0.513919631402391,
+    "mAP50": 0.5646112979697258,
+    "mAP50_95": 0.24422981229419208,
+    "velocidade_ms_por_imagem": {
+      "preprocess": 0.864,
+      "inference": 2.901,
+      "loss": 0.001,
+      "postprocess": 1.21
+    },
+    "melhor_f1": 0.5612225661305628,
+    "limiar_conf_melhor_f1": 0.26126126126126126,
+    "precisao_no_limiar": 0.5780512057108186,
+    "revocacao_no_limiar": 0.545346062052506
+  },
+  "test": {
+    "precisao": 0.6336949072539874,
+    "revocacao": 0.5208905076556547,
+    "mAP50": 0.5612146179655764,
+    "mAP50_95": 0.24915495132341497,
+    "velocidade_ms_por_imagem": {
+      "preprocess": 0.851,
+      "inference": 2.909,
+      "loss": 0.001,
+      "postprocess": 1.763
+    },
+    "melhor_f1": 0.5730988999294686,
+    "limiar_conf_melhor_f1": 0.2682682682682683,
+    "precisao_no_limiar": 0.6197666915051883,
+    "revocacao_no_limiar": 0.532967032967033
+  }
+}

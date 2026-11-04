@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Arquitetura VigiaVia — Visão</title>
+<style>
+  html, body { margin: 0; background: #fff; font-family: "Segoe UI", Roboto, Arial, sans-serif; }
+  svg { display: block; }
+  .t { font-size: 15px; fill: #13202b; }
+  .tb { font-size: 16px; font-weight: 700; fill: #13202b; }
+  .tt { font-size: 13px; fill: #45525e; }
+  .h { font-size: 13px; font-weight: 700; letter-spacing: .08em; fill: #6b7783; }
+</style></head>
+<body>
+<svg width="1600" height="820" viewBox="0 0 1600 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5866"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1600" height="820" fill="#ffffff"/>
+  <text x="40" y="44" style="font-size:26px;font-weight:800;fill:#13202b">VigiaVia — componente de Visão Computacional no MVP</text>
+  <text x="40" y="72" class="tt">Do quadro de vídeo ao chamado priorizado: a imagem é processada na borda e só um recorte da via + coordenadas seguem adiante.</text>
+
+  <!-- coluna 1: fontes -->
+  <text x="40" y="118" class="h">FONTES DE IMAGEM</text>
+  <g>
+    <rect x="40" y="132" width="300" height="86" rx="12" fill="#eef4ff" stroke="#2a6fdb" stroke-width="2"/>
+    <text x="58" y="164" class="tb">Celular do cidadão</text>
+    <text x="58" y="190" class="tt">foto, vídeo ou câmera ao vivo (web)</text>
+    <rect x="40" y="234" width="300" height="86" rx="12" fill="#eef4ff" stroke="#2a6fdb" stroke-width="2"/>
+    <text x="58" y="266" class="tb">Câmera veicular</text>
+    <text x="58" y="292" class="tt">ônibus, coleta de lixo, motoboys (RTSP)</text>
+    <rect x="40" y="336" width="300" height="86" rx="12" fill="#eef4ff" stroke="#2a6fdb" stroke-width="2"/>
+    <text x="58" y="368" class="tb">Robô do Maker Lab</text>
+    <text x="58" y="394" class="tt">câmera + sensor ultrassônico</text>
+  </g>
+
+  <!-- coluna 2: pipeline CV -->
+  <rect x="400" y="100" width="560" height="560" rx="18" fill="#fff8e8" stroke="#f5a623" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <text x="424" y="128" class="h">ESTE TRABALHO · VISÃO COMPUTACIONAL (borda / servidor)</text>
+  <g>
+    <rect x="430" y="146" width="500" height="62" rx="10" fill="#fff" stroke="#c9d2db" stroke-width="1.5"/>
+    <text x="450" y="172" class="tb">1 · Pré-processamento</text>
+    <text x="450" y="194" class="tt">letterbox 640×640, normalização · OpenCV</text>
+    <rect x="430" y="222" width="500" height="62" rx="10" fill="#fff" stroke="#f5a623" stroke-width="2"/>
+    <text x="450" y="248" class="tb">2 · Detector YOLO26 (fine-tuning no RDD2022)</text>
+    <text x="450" y="270" class="tt">classe "buraco" · PyTorch na GPU ou ONNX Runtime (CPU / navegador)</text>
+    <rect x="430" y="298" width="500" height="62" rx="10" fill="#fff" stroke="#c9d2db" stroke-width="1.5"/>
+    <text x="450" y="324" class="tb">3 · Rastreamento ByteTrack</text>
+    <text x="450" y="346" class="tt">ID único por buraco → 1 evento por buraco, não por quadro</text>
+    <rect x="430" y="374" width="500" height="62" rx="10" fill="#fff" stroke="#c9d2db" stroke-width="1.5"/>
+    <text x="450" y="400" class="tb">4 · Severidade + zona de trajetória (AR)</text>
+    <text x="450" y="422" class="tt">área corrigida por perspectiva · alerta "buraco à frente" + voz</text>
+    <rect x="430" y="450" width="500" height="62" rx="10" fill="#fff" stroke="#3ccf7a" stroke-width="2"/>
+    <text x="450" y="476" class="tb">5 · Privacidade by design (LGPD)</text>
+    <text x="450" y="498" class="tt">rostos borrados (YuNet) · só o recorte da via é guardado</text>
+    <rect x="430" y="526" width="500" height="62" rx="10" fill="#13202b"/>
+    <text x="450" y="552" class="tb" style="fill:#fff">6 · Evento JSON</text>
+    <text x="450" y="574" class="tt" style="fill:#c9d2db">lat, lon, severidade, confiança, recorte, modelo</text>
+    <text x="430" y="630" class="tt">Contrato: POST /v1/deteccoes (imagem → caixas) · POST /v1/relatos (evento → fila)</text>
+  </g>
+  <path d="M340 175 C 370 175, 380 177, 428 177" stroke="#4a5866" stroke-width="2" fill="none" marker-end="url(#seta)"/>
+  <path d="M340 277 C 380 277, 390 190, 428 182" stroke="#4a5866" stroke-width="2" fill="none" marker-end="url(#seta)"/>
+  <path d="M340 379 C 390 379, 395 200, 428 188" stroke="#4a5866" stroke-width="2" fill="none" marker-end="url(#seta)"/>
+  <path d="M680 208 V 220" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+  <path d="M680 284 V 296" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+  <path d="M680 360 V 372" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+  <path d="M680 436 V 448" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+  <path d="M680 512 V 524" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- coluna 3: MVP -->
+  <text x="1020" y="118" class="h">MVP VIGIAVIA · OUTROS COMPONENTES</text>
+  <g>
+    <rect x="1020" y="132" width="540" height="96" rx="12" fill="#f1fbf5" stroke="#2f9e5b" stroke-width="2"/>
+    <text x="1040" y="164" class="tb">API de relatos (FastAPI + SQLite)</text>
+    <text x="1040" y="188" class="tt">deduplicação geográfica (raio de 15 m): relatos repetidos</text>
+    <text x="1040" y="208" class="tt">viram confirmações do mesmo buraco · prioridade calculada</text>
+    <rect x="1020" y="246" width="540" height="96" rx="12" fill="#f1fbf5" stroke="#2f9e5b" stroke-width="2"/>
+    <text x="1040" y="278" class="tb">Fila da zeladoria + mapa (pessoa no circuito)</text>
+    <text x="1040" y="302" class="tt">servidor da subprefeitura confirma, descarta ou resolve;</text>
+    <text x="1040" y="322" class="tt">só então vira ordem de serviço de tapa-buraco</text>
+    <rect x="1020" y="360" width="262" height="110" rx="12" fill="#f6f7f9" stroke="#9aa6b2" stroke-width="1.5"/>
+    <text x="1036" y="390" class="tb">Dados (Big Data)</text>
+    <text x="1036" y="414" class="tt">eventos → camadas</text>
+    <text x="1036" y="434" class="tt">Bronze / Prata / Ouro</text>
+    <text x="1036" y="454" class="tt">+ chuva (Open-Meteo)</text>
+    <rect x="1298" y="360" width="262" height="110" rx="12" fill="#f6f7f9" stroke="#9aa6b2" stroke-width="1.5"/>
+    <text x="1314" y="390" class="tb">Automação (RPA)</text>
+    <text x="1314" y="414" class="tt">abre/acompanha chamados</text>
+    <text x="1314" y="434" class="tt">e avisa o cidadão</text>
+    <rect x="1020" y="488" width="262" height="110" rx="12" fill="#f6f7f9" stroke="#9aa6b2" stroke-width="1.5"/>
+    <text x="1036" y="518" class="tb">Inteligência (GenAI)</text>
+    <text x="1036" y="542" class="tt">assistente explica direitos</text>
+    <text x="1036" y="562" class="tt">e o status do chamado</text>
+    <rect x="1298" y="488" width="262" height="110" rx="12" fill="#f6f7f9" stroke="#9aa6b2" stroke-width="1.5"/>
+    <text x="1314" y="518" class="tb">Produção (DevSecOps)</text>
+    <text x="1314" y="542" class="tt">container, CI/CD,</text>
+    <text x="1314" y="562" class="tt">monitoramento</text>
+  </g>
+  <path d="M930 557 C 980 557, 975 180, 1018 180" stroke="#4a5866" stroke-width="2.2" fill="none" marker-end="url(#seta)"/>
+  <path d="M1290 228 V 244" stroke="#4a5866" stroke-width="2" marker-end="url(#seta)"/>
+  <path d="M1150 342 V 358" stroke="#4a5866" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#seta)"/>
+  <path d="M1430 342 V 358" stroke="#4a5866" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#seta)"/>
+
+  <!-- rodapé -->
+  <rect x="40" y="690" width="1520" height="96" rx="12" fill="#f6f7f9"/>
+  <text x="60" y="722" class="tb">Por que assim?</text>
+  <text x="60" y="748" class="t">• Rastreamento transforma centenas de quadros em UM relato por buraco, e o raio de deduplicação junta relatos de cidadãos diferentes.</text>
+  <text x="60" y="772" class="t">• ONNX roda no próprio celular (sem internet, a imagem não sai do aparelho); a GPU no servidor atende câmeras veiculares em tempo real.</text>
+</svg>
+</body></html>

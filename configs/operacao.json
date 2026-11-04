@@ -1,0 +1,16 @@
+{
+  "experimento": "E1_yolo26n",
+  "pesos": "modelos/vigiavia_buracos.pt",
+  "onnx": "/modelos/vigiavia_buracos.onnx",
+  "conf": 0.305,
+  "regra_escolha": "menor latência entre modelos a até 1.5 p.p. do melhor mAP50-95 de validação",
+  "metricas_teste": {
+    "mAP50": 0.5848490933060299,
+    "mAP50_95": 0.25891471142347405,
+    "precisao": 0.6698835989929187,
+    "revocacao": 0.5263736263736264,
+    "precisao_no_limiar": 0.704,
+    "revocacao_no_limiar": 0.5044,
+    "f1_no_limiar": 0.5877
+  }
+}

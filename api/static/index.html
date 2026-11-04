@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VigiaVia — Visão Computacional</title>
+  <meta name="description" content="Detecção de buracos em vias públicas com YOLO, em tempo real, integrada à fila de zeladoria.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<header class="topo">
+  <div class="marca">
+    <span class="logo" aria-hidden="true">◉</span>
+    <div>
+      <h1>VigiaVia</h1>
+      <p>Buracos detectados por visão computacional, priorizados para a zeladoria</p>
+    </div>
+  </div>
+  <nav role="tablist" aria-label="Seções">
+    <button role="tab" id="tab-cidadao" aria-controls="painel-cidadao" aria-selected="true">Cidadão</button>
+    <button role="tab" id="tab-zeladoria" aria-controls="painel-zeladoria" aria-selected="false">Zeladoria</button>
+    <button role="tab" id="tab-modelo" aria-controls="painel-modelo" aria-selected="false">Modelo</button>
+  </nav>
+</header>
+
+<main id="conteudo">
+  <!-- ================================================================ CIDADÃO -->
+  <section role="tabpanel" id="painel-cidadao" aria-labelledby="tab-cidadao">
+    <div class="grade">
+      <div class="cartao">
+        <h2>1. Mostre o buraco</h2>
+        <div class="acoes">
+          <button id="btn-camera" class="primario">📷 Câmera ao vivo</button>
+          <label class="botao" for="arquivo">🖼️ Enviar foto ou vídeo</label>
+          <input id="arquivo" type="file" accept="image/*,video/*" capture="environment" hidden>
+          <button id="btn-parar" hidden>■ Parar</button>
+        </div>
+        <div class="opcoes">
+          <label>Processamento
+            <select id="modo">
+              <option value="servidor">No servidor (GPU, mais rápido)</option>
+              <option value="aparelho">No aparelho (offline — a imagem não sai do celular)</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" id="voz" checked> Alerta por voz</label>
+          <label>Limiar <output id="conf-val">0,35</output>
+            <input id="conf" type="range" min="0.10" max="0.90" step="0.05" value="0.35" aria-describedby="conf-ajuda">
+          </label>
+          <small id="conf-ajuda">Limiar maior = menos alarmes falsos, mas pode perder buracos pequenos.</small>
+        </div>
+        <div class="visor" id="visor">
+          <video id="video" playsinline muted hidden></video>
+          <canvas id="tela" aria-label="Imagem com os buracos detectados" role="img"></canvas>
+          <div id="alerta" class="alerta" role="alert" hidden>⚠ ATENÇÃO: BURACO À FRENTE</div>
+          <p id="vazio" class="vazio">Use a câmera ou envie uma foto de uma via.</p>
+        </div>
+        <p id="status" class="status" aria-live="polite"></p>
+      </div>
+
+      <div class="cartao">
+        <h2>2. Envie o relato</h2>
+        <ul id="lista-det" class="lista-det" aria-live="polite"></ul>
+        <p class="lgpd"><strong>Privacidade:</strong> enviamos só o <em>recorte da via</em> onde está o buraco e a
+          localização aproximada. Nenhuma foto inteira, nome ou dado do seu aparelho é guardado.</p>
+        <div class="coords">
+          <label>Latitude <input id="lat" type="number" step="0.000001" value="-23.560345"></label>
+          <label>Longitude <input id="lon" type="number" step="0.000001" value="-46.650508"></label>
+          <button id="btn-gps">📍 Usar minha localização</button>
+        </div>
+        <button id="btn-relatar" class="primario largo" disabled>Enviar relato</button>
+        <p id="resposta" class="resposta" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ ZELADORIA -->
+  <section role="tabpanel" id="painel-zeladoria" aria-labelledby="tab-zeladoria" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="grade">
+      <div class="cartao"><h2>Mapa de relatos</h2><div id="mapa" class="mapa" aria-label="Mapa com os buracos relatados"></div></div>
+      <div class="cartao">
+        <h2>Fila priorizada <button id="btn-atualizar" class="mini">↻ Atualizar</button></h2>
+        <p class="ajuda">Prioridade = severidade × (1 + log₂ confirmações). Só uma pessoa da zeladoria transforma o
+          relato em ordem de serviço (IA com pessoa no circuito).</p>
+        <div class="tabela-rolagem">
+          <table>
+            <thead><tr><th>Prioridade</th><th>Evidência</th><th>Severidade</th><th>Confirmações</th><th>Confiança</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="fila"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ MODELO -->
+  <section role="tabpanel" id="painel-modelo" aria-labelledby="tab-modelo" hidden>
+    <div class="cartao"><h2>Modelo em produção</h2><div id="ficha-modelo">Carregando…</div></div>
+  </section>
+</main>
+
+<footer class="rodape">FIAP · Global Solution 2026.2 · CitizenTech · Applied Computer Vision — Deivison Pertel, Eduardo Akira Murata, Wesley Souza de Oliveira</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

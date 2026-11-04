@@ -1,0 +1,37 @@
+# Hiperparâmetros de treino do VigiaVia (Ultralytics). Comentários explicam as escolhas.
+# Cada experimento herda estes valores; o script 02_treinar.py permite sobrescrevê-los.
+
+comum:
+  imgsz: 640            # as imagens do RDD2022 (Japão/Índia) têm 600x600 px
+  epochs: 60            # dataset de ~2,9 mil imagens de treino: mais épocas, com early stopping
+  patience: 20          # para se a métrica de validação não melhorar por 20 épocas
+  batch: 16             # cabe em 8 GB de VRAM (RTX 3070) com AMP
+  optimizer: auto       # Ultralytics escolhe o otimizador/LR conforme o modelo e o nº de iterações
+  cos_lr: true          # decaimento cosseno da taxa de aprendizado
+  close_mosaic: 10      # desliga o mosaic nas 10 últimas épocas (estabiliza a convergência)
+  seed: 42              # reprodutibilidade
+  deterministic: true
+  workers: 8
+  cache: disk           # salva as imagens já decodificadas (.npy): o gargalo medido era a CPU
+                        # (GPU a ~40%); cache em RAM no Windows seria duplicado em cada worker
+  amp: true             # precisão mista (FP16) na GPU
+  # Aumentos de dados: buracos aparecem sob sol, sombra, chuva e em perspectiva de câmera veicular.
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4            # variação de brilho (sol/sombra/entardecer)
+  degrees: 0.0          # câmera veicular raramente gira
+  translate: 0.1
+  scale: 0.5            # buracos próximos e distantes
+  fliplr: 0.5           # espelhamento horizontal é fisicamente plausível
+  flipud: 0.0           # de ponta-cabeça NÃO é plausível (céu embaixo)
+  mosaic: 1.0
+  mixup: 0.0
+  plots: true
+
+experimentos:
+  E1_yolo26n:
+    model: yolo26n.pt     # nano: candidato para celular/edge (tempo real em CPU)
+  E2_yolo11n:
+    model: yolo11n.pt     # linha de base: geração anterior no MESMO porte (comparação justa n x n)
+  E3_yolo26s:
+    model: yolo26s.pt     # small: ~4x parâmetros — quanto a capacidade extra rende?

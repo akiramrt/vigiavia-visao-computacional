@@ -1,0 +1,24 @@
+{
+  "fonte": "C:\\Users\\eduar\\AppData\\Local\\Temp\\claude\\5c076af41ba4acbc\\6e99c3b2-8eac-48d7-b7f2-d6d1e0f28f47\\scratchpad\\videos_fonte\\carros_no_buraco.webm",
+  "modelo": "vigiavia_buracos",
+  "limiar": 0.305,
+  "quadros": 621,
+  "fps_fonte": 29.97,
+  "tempo_total_s": 44.1,
+  "ms_por_quadro_pipeline": 54.2,
+  "ms_p95": 76.1,
+  "fps_pipeline": 18.5,
+  "trilhas": 3,
+  "trilhas_duplicadas_suprimidas": 0,
+  "buracos_confirmados": 3,
+  "creditos": {
+    "arquivo": "carros_no_buraco.webm",
+    "titulo_commons": "File:Cars Moving into pothole.webm",
+    "pagina": "https://commons.wikimedia.org/wiki/File%3ACars_Moving_into_pothole.webm",
+    "autor": "Amuzujoe",
+    "licenca": "CC BY-SA 4.0",
+    "data": "2020-02-26",
+    "descricao": "These cars are driving into a pothole, which make it difficult for them to move very fast. It created a heavy go slow as at the time the video was taken. This is to show how some major roads looks in Ghana. In is with Kumasi the Ashanti Region. \n\n\n\n\n\n\nThis is an image with the theme \"Africa on the M",
+    "resolucao": "1920x1080"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "pytorch_gpu": {
+    "mAP50": 0.5848,
+    "mAP50_95": 0.2589,
+    "ms_inferencia": 2.33
+  },
+  "onnx_cpu_fim_a_fim": {
+    "mAP50": 0.542,
+    "mAP50_95": 0.2326,
+    "ms_inferencia": 20.72
+  },
+  "onnx_cpu_com_nms": {
+    "mAP50": 0.5816,
+    "mAP50_95": 0.2521,
+    "ms_inferencia": 20.0
+  },
+  "variante_escolhida": "com_nms",
+  "onnx_cpu": {
+    "mAP50": 0.5816,
+    "mAP50_95": 0.2521,
+    "ms_inferencia": 20.0
+  }
+}

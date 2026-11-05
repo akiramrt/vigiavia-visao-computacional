@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -27,6 +28,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 RAIZ = Path(__file__).resolve().parents[1]
+PARAGRAFO = chr(10) * 2   # separador de parágrafos do texto narrado
 W, H, FPS = 1920, 1080, 30
 FUNDO = (14, 20, 27)
 DESTAQUE = (255, 176, 32)
@@ -181,9 +183,90 @@ def duracao_clipes(clipes: list[Path]) -> float:
     return total
 
 
+def alinhar_com_whisper(audio: Path, paragrafos: list[str]) -> list[float] | None:
+    """Transcreve a narração (faster-whisper, CPU) e devolve o instante de início de cada parágrafo
+    (ponto médio entre a última palavra do anterior e a primeira do atual). None se indisponível."""
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        return None
+    import unicodedata
+    bruto = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(audio), "-f", "f32le", "-ac", "1", "-ar", "16000",
+                            "-"], capture_output=True, check=True).stdout
+    segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(
+        np.frombuffer(bruto, np.float32), language="pt", word_timestamps=True)
+    pal = [(w.start, w.end, w.word) for s in segs for w in s.words]
+    norm = lambda s: re.sub(r"[^a-z]", "", unicodedata.normalize("NFD", s.lower()).encode("ascii", "ignore").decode())  # noqa: E731
+    txt = [norm(x[2]) for x in pal]
+    cortes, i0 = [0.0], 0
+    for p in paragrafos[1:]:
+        alvo = [norm(x) for x in p.split()[:2]]
+        i = next((i for i in range(i0 + 1, len(txt) - 1) if txt[i:i + 2] == alvo), None)
+        if i is None:
+            return None
+        cortes.append((pal[i - 1][1] + pal[i][0]) / 2)
+        i0 = i
+    return cortes
+
+
+def dividir_narracao(audio: Path, pesos: list[float], dir_tmp: Path, paragrafos: list[str] | None = None) -> list[Path]:
+    """Corta uma narração única (um parágrafo por segmento) nas pausas mais próximas das fronteiras
+    esperadas, estimadas pela proporção de caracteres de cada parágrafo."""
+    sonda = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                            str(audio)], capture_output=True, text=True, check=True)
+    total = float(sonda.stdout.strip())
+    det = subprocess.run(["ffmpeg", "-i", str(audio), "-af", "silencedetect=noise=-35dB:d=0.15", "-f", "null", "-"],
+                         capture_output=True, text=True)
+    ini = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", det.stderr)]
+    fim = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", det.stderr)]
+    pausas = [((a + b) / 2, b - a) for a, b in zip(ini, fim)]
+    # Segmentação por programação dinâmica: os cortes ficam em pausas e cada parágrafo deve ter
+    # velocidade de fala (caracteres/s) próxima da média da narração; pausas longas ganham bônus.
+    r0 = sum(pesos) / total
+    pontos = [(0.0, 0.0)] + [p for p in pausas if 0.5 < p[0] < total - 0.5] + [(total, 1.0)]
+    k, n = len(pesos), len(pontos)
+    inf = float("inf")
+    dp = [[inf] * n for _ in range(k + 1)]
+    ant = [[-1] * n for _ in range(k + 1)]
+    dp[0][0] = 0.0
+    for j in range(1, k + 1):
+        for b in range(1, n):
+            for a in range(b):
+                if dp[j - 1][a] == inf:
+                    continue
+                dur = pontos[b][0] - pontos[a][0]
+                if dur < 2.0:
+                    continue
+                c = dp[j - 1][a] + ((pesos[j - 1] / dur - r0) / r0) ** 2 - 0.05 * pontos[b][1]
+                if c < dp[j][b]:
+                    dp[j][b], ant[j][b] = c, a
+    idx, b = [], n - 1
+    for j in range(k, 0, -1):
+        idx.append(b)
+        b = ant[j][b]
+    cortes = [0.0] + [pontos[i][0] for i in reversed(idx)][:-1]
+    via_whisper = alinhar_com_whisper(audio, paragrafos) if paragrafos else None
+    if via_whisper:
+        cortes = via_whisper
+    cortes.append(total)
+    partes = []
+    for i in range(len(pesos)):
+        p = dir_tmp / f"narr_{i:02d}.wav"
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(audio), "-ss", f"{cortes[i]:.3f}",
+                        "-to", f"{cortes[i + 1]:.3f}", "-ar", "48000", "-ac", "1", str(p)], check=True)
+        partes.append(p)
+    print("  cortes da narração (s):", [round(c, 2) for c in cortes])
+    return partes
+
+
 def render_segmento(seg: dict, dir_tmp: Path, idx: int) -> Path:
     wav = dir_tmp / f"s{idx:02d}.wav"
-    dur_audio = sintetizar(seg["fala"], wav)
+    if seg.get("wav_externo"):
+        shutil.copy2(seg["wav_externo"], wav)
+        with wave.open(str(wav)) as w:
+            dur_audio = w.getnframes() / w.getframerate()
+    else:
+        dur_audio = sintetizar(seg["fala"], wav)
     dur = max(dur_audio + 0.8, seg.get("min_dur", 0))
     if seg.get("clipes"):                       # mostra o clipe inteiro (até max_dur)
         dur = min(max(dur, duracao_clipes(seg["clipes"])), seg.get("max_dur", 60))
@@ -253,6 +336,10 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--saida", type=Path, default=RAIZ / "demo" / "VigiaVia_demo.mp4")
     ap.add_argument("--clipes", type=Path, default=RAIZ / "demo" / "clipes")
+    ap.add_argument("--narracao", type=Path, help="narração única (mp3/wav), um parágrafo por segmento, "
+                                                   "no lugar da voz sintetizada do Windows")
+    ap.add_argument("--texto-narracao", type=Path, default=RAIZ / "docs" / "narracao.txt",
+                    help="texto narrado (parágrafos separados por linha em branco) para alinhar os cortes")
     args = ap.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg não encontrado no PATH")
@@ -372,6 +459,12 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory() as d:
         dir_tmp = Path(d)
+        if args.narracao:
+            texto = (args.texto_narracao.read_text(encoding="utf-8").split(PARAGRAFO) if args.texto_narracao
+                     else [s["fala"] for s in segs])
+            assert len(texto) == len(segs), f"{len(texto)} parágrafos para {len(segs)} segmentos"
+            for s, w in zip(segs, dividir_narracao(args.narracao, [len(x.strip()) for x in texto], dir_tmp, [x.strip() for x in texto])):
+                s["wav_externo"] = w
         partes = [render_segmento(s, dir_tmp, i) for i, s in enumerate(segs)]
         lista = dir_tmp / "lista.txt"
         lista.write_text("".join(f"file '{p.as_posix()}'\n" for p in partes), encoding="utf-8")

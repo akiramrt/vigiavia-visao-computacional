@@ -1,0 +1,21 @@
+Olá! Este é o Vigia Via, o componente de visão computacional da nossa solução cidadã para a Global Solution da FIAP. Integrantes: Deivison Pertel, Eduardo Akira Murata e Wesley Souza de Oliveira.
+
+Buracos causam quedas de motociclistas e ciclistas, danos a veículos e atrasos no transporte. Só em São Paulo foram cento e treze mil pedidos de tapa-buraco em dois mil e vinte e cinco, e a própria prefeitura reconhece que um mesmo buraco gera vários chamados. Hoje, tudo depende de alguém parar e registrar manualmente.
+
+O Vigia Via detecta buracos em tempo real, com a câmera do celular ou de ônibus e caminhões de coleta. Treinamos um detector iôlo vinte e seis com o dataset internacional érre-dê-dê dois mil e vinte e dois, rastreamos cada buraco para gerar um único relato, estimamos a severidade, e enviamos só um recorte da via e as coordenadas para a fila da zeladoria.
+
+Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro estavam marcadas como buraco. Usamos a versão oficial, com quatro mil cento e noventa e duas imagens de cinco países, e separamos treino e teste por trajeto, para não haver vazamento.
+
+Este é um vídeo real gravado na Rua Sílvia, na Bela Vista, em São Paulo. O modelo nunca viu este vídeo, nem imagens do Brasil, durante o treino. Cada caixa mostra a confiança e a severidade estimada, e quando o buraco entra na trajetória, a interface de realidade aumentada dispara o alerta.
+
+Em outra cidade e com outra câmera, o rastreamento mantém o mesmo identificador para cada buraco ao longo dos quadros, e o contador soma apenas buracos únicos. Rostos são borrados automaticamente, por privacidade.
+
+No conjunto de teste, com seiscentas e vinte e duas imagens nunca vistas, o modelo escolhido atingiu precisão média, o éme-á-pê, de cinquenta e oito por cento, com precisão de setenta por cento e revocação de cinquenta por cento no limiar escolhido. Comparamos três modelos e escolhemos o mais leve dentro da margem de precisão: ele roda a sessenta e dois quadros por segundo na placa de vídeo e trinta e nove no processador.
+
+À esquerda, acertos. À direita, buracos que o modelo perdeu: em geral pequenos, distantes ou com sombra. Por isso a detecção é uma sugestão: uma pessoa da zeladoria valida antes de virar ordem de serviço.
+
+Também medimos o desempenho por país de origem das imagens e por iluminação. Saber onde o modelo erra orienta a próxima etapa: coletar imagens brasileiras pelo próprio aplicativo e retreinar.
+
+A visão está integrada ao éme-vê-pê por uma á-pê-í. O cidadão envia uma foto ou usa a câmera ao vivo, inclusive com o modelo rodando no próprio celular, sem internet. Relatos a menos de quinze metros viram confirmações do mesmo buraco, e a zeladoria vê uma fila priorizada, com mapa.
+
+Vigia Via: ruas mais seguras com visão computacional responsável, conectada aos objetivos de desenvolvimento sustentável onze, nove e três. O código completo está no nosso GitHub. Obrigado!

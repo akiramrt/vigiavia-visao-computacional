@@ -15,7 +15,7 @@ pessoa no circuito e privacidade desde o projeto.
 | Wesley Souza de Oliveira | 97874 |
 
 **Entregáveis:** 📄 [Relatório técnico (PDF)](docs/relatorio/VigiaVia_Relatorio_Applied_Computer_Vision.pdf) ·
-🎬 [Vídeo de demonstração](https://youtu.be/<id-do-video>) *(link a preencher após o upload)* · 📓 [Notebook com saídas](notebooks/VigiaVia_Visao_Computacional.ipynb)
+🎬 [Vídeo de demonstração](https://github.com/akiramrt/vigiavia-visao-computacional/blob/main/demo/VigiaVia_demo_720p.mp4) (MP4 720p no repositório) · 📓 [Notebook com saídas](notebooks/VigiaVia_Visao_Computacional.ipynb)
 
 ![Arquitetura do componente de visão no MVP](docs/img/arquitetura.png)
 

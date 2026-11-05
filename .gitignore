@@ -27,3 +27,6 @@ venv*/
 # sistema
 .DS_Store
 Thumbs.db
+
+# cópia leve do vídeo de demonstração (versionada)
+!demo/VigiaVia_demo_720p.mp4

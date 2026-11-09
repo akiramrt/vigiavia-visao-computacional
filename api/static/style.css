@@ -28,13 +28,17 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .primario { background: var(--primaria); color: var(--primaria-texto); font-weight: 700; }
 .largo { width: 100%; justify-content: center; }
 .mini { font-size: .85rem; padding: 4px 10px; min-height: 32px; }
-select, input[type=number] { background: var(--fundo); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; padding: 8px; font-size: 1rem; }
+.opcoes > label { min-width: 0; max-width: 100%; }   /* no celular, o texto longo do <select> passava do cartão */
+select, input[type=number] { max-width: 100%; background: var(--fundo); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; padding: 8px; font-size: 1rem; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--suave); }
 label.check { flex-direction: row; align-items: center; color: var(--texto); }
 small { color: var(--suave); flex-basis: 100%; }
 .visor { position: relative; background: #000; border-radius: 10px; overflow: hidden; min-height: 260px; display: flex; align-items: center; justify-content: center; }
-.visor video, .visor canvas { width: 100%; height: auto; display: block; }
-.visor video { position: absolute; inset: 0; opacity: 0; }
+/* O vídeo toca no próprio <video> (fluido, com controles); o canvas fica por cima, transparente, só com as caixas */
+.palco { position: relative; width: 100%; }
+.palco video, .palco canvas { width: 100%; height: auto; display: block; }
+.palco.sobre-video canvas { position: absolute; inset: 0; height: 100%; pointer-events: none; }
+.palco video[hidden] { display: none; }   /* sem isto, o display:block acima vence o hidden e sobra uma faixa preta na foto */
 .vazio { color: #9aa7b3; position: absolute; text-align: center; padding: 20px; }
 .alerta { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--perigo); color: #fff; font-weight: 800; font-size: clamp(1rem, 3vw, 1.6rem); padding: 10px 20px; border-radius: 10px; box-shadow: 0 6px 20px #0008; white-space: nowrap; }
 .status { color: var(--suave); min-height: 1.5em; margin: 8px 0 0; }
@@ -42,6 +46,12 @@ small { color: var(--suave); flex-basis: 100%; }
 .lista-det li { display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; }
 .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 700; font-size: .85rem; color: #111; }
 .chip.baixa { background: var(--baixa); } .chip.media { background: var(--media); } .chip.alta { background: var(--alta); color: #fff; }
+.subtitulo { margin: 4px 0 8px; font-size: 1rem; }
+.busca { display: flex; gap: 8px; margin-bottom: 8px; }
+.busca input { flex: 1; min-width: 0; background: var(--fundo); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; padding: 8px; font-size: 1rem; }
+.mapa-local { height: 240px; border-radius: 10px; margin-bottom: 6px; }
+.pino { background: var(--primaria); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 2px 8px #0009; }
+.erro-txt { color: var(--perigo); }
 .lgpd { font-size: .9rem; color: var(--suave); border-left: 4px solid var(--ok); padding-left: 10px; }
 .resposta { font-weight: 600; min-height: 1.5em; }
 .resposta.ok { color: var(--ok); } .resposta.erro { color: var(--perigo); }
@@ -49,6 +59,10 @@ small { color: var(--suave); flex-basis: 100%; }
 .kpi { background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; padding: 12px 16px; }
 .kpi b { display: block; font-size: 1.8rem; } .kpi span { color: var(--suave); font-size: .9rem; }
 .mapa { height: 460px; border-radius: 10px; }
+/* Zeladoria: mapa em cima e fila embaixo, na largura toda; lado a lado, a fila ficava estreita e escondia Status e Ações */
+.grade-zeladoria { grid-template-columns: minmax(0, 1fr); }
+.grade-zeladoria .mapa { height: 360px; }
+.acoes-fila { white-space: nowrap; }
 .ajuda { color: var(--suave); font-size: .9rem; margin-top: 0; }
 .tabela-rolagem { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .95rem; }

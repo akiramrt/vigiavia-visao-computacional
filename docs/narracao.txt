@@ -4,7 +4,7 @@ Buracos causam quedas de motociclistas e ciclistas, danos a veículos e atrasos 
 
 O Vigia Via detecta buracos em tempo real, com a câmera do celular ou de ônibus e caminhões de coleta. Treinamos um detector iôlo vinte e seis com o dataset internacional érre-dê-dê dois mil e vinte e dois, rastreamos cada buraco para gerar um único relato, estimamos a severidade, e enviamos só um recorte da via e as coordenadas para a fila da zeladoria.
 
-Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro estavam marcadas como buraco. Usamos a versão oficial, com quatro mil cento e noventa e duas imagens de cinco países, e separamos treino e teste por trajeto, para não haver vazamento.
+Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro estavam marcadas como buraco. Usamos a versão oficial, com quatro mil cento e noventa e duas imagens de cinco países.
 
 Este é um vídeo real gravado na Rua Sílvia, na Bela Vista, em São Paulo. O modelo nunca viu este vídeo, nem imagens do Brasil, durante o treino. Cada caixa mostra a confiança e a severidade estimada, e quando o buraco entra na trajetória, a interface de realidade aumentada dispara o alerta.
 

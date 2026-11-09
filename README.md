@@ -29,12 +29,21 @@ pessoa no circuito e privacidade desde o projeto.
 | **Cidadão e território** | Quem circula pelas vias — motociclistas (inclusive entregadores), ciclistas, pedestres, motoristas e usuários de ônibus — e os agentes de zeladoria das subprefeituras. Piloto: centro de São Paulo (Bela Vista). |
 | **Problema, em uma frase** | Buracos nas vias causam acidentes e custos, e sua identificação depende de chamados manuais, lentos, imprecisos e duplicados. |
 | **Proposta de valor** | Detectar buracos automaticamente, em tempo real, com as câmeras que já circulam pela cidade, gerando um relato único, georreferenciado e priorizado por buraco — com privacidade e validação humana. |
-| **Arquitetura: componentes** | Visão (este repositório: YOLO + ByteTrack + HUD de RA + API) · Dados (lakehouse) · Inteligência (GenAI) · Automação (RPA) · Produção (DevSecOps) · Físico (robô do Maker Lab) · Negócio (pitch). |
-| **Fontes de dados** | RDD2022, release oficial do CRDDC'2022 (figshare) — treino/validação/teste; vídeos reais do Wikimedia Commons (CC BY/BY-SA) — teste fora da distribuição; relatos do próprio app. |
-| **Modelos de IA utilizados** | YOLO26n em produção (fine-tuning Ultralytics) · YOLO26n, YOLO11n e YOLO26s comparados · ByteTrack (rastreamento) · YuNet (borragem de rostos). |
-| **URL do MVP e repositório** | Este repositório · API e interface web prontas para container (`Dockerfile`); a publicação em nuvem é do componente Produção. |
+| **Arquitetura: componentes** | Visão (este repositório: YOLO + rastreamento BoT-SORT + HUD de RA + API) · Dados (lakehouse) · Inteligência (GenAI) · Automação (RPA) · Produção (DevSecOps) · Físico (robô do Maker Lab) · Negócio (pitch). |
+| **Fontes de dados** | RDD2022, release oficial do CRDDC'2022 (figshare) — treino/validação/teste; vídeos reais do Wikimedia Commons (CC BY/BY-SA) — teste fora da distribuição; relatos do próprio app. As telas usam relatos de demonstração: imagens reais analisadas pela API, com coordenadas **simuladas** em torno da Rua Sílvia (`scripts/06c_capturar_telas.py`). |
+| **Modelos de IA utilizados** | YOLO26n em produção (fine-tuning Ultralytics) · YOLO26n, YOLO11n e YOLO26s comparados · BoT-SORT (rastreamento, com a associação do ByteTrack e compensação de movimento) · YuNet (borragem de rostos). |
+| **URL do MVP e repositório** | **MVP no ar:** https://ca-vigiavia-prod.happywave-0bf5b4c3.brazilsouth.azurecontainerapps.io (publicado pelo componente Produção, [akiramrt/vigiavia-mvp](https://github.com/akiramrt/vigiavia-mvp)) · este repositório: API e interface web prontas para container (`Dockerfile`). |
 | **Indicadores de impacto** | Tempo entre detecção e reparo · % de chamados duplicados evitados · buracos detectados por km rodado · precisão das detecções confirmadas pela zeladoria · quedas e sinistros nas vias monitoradas. |
-| **ODS conectados** | **11** (11.2 transporte seguro; 11.3 gestão participativa) · **9** (9.1 infraestrutura de qualidade e resiliente) · **3** (3.6 reduzir mortes e lesões no trânsito). |
+| **ODS conectados** | **11** (11.2 transporte seguro; 11.3 gestão participativa) · **9** (9.1 infraestrutura de qualidade e resiliente) · **3** (3.6 reduzir mortes e lesões no trânsito) — como contribuímos, na tabela abaixo. |
+
+### Como o VigiaVia contribui para os ODS
+
+| ODS e meta | Contribuição | Indicador do produto |
+|---|---|---|
+| 11.2 — transporte seguro e acessível | Vias sem buracos reduzem quedas de motos e bicicletas; o alerta de RA avisa o condutor antes do buraco | Tempo entre detecção e reparo; buracos abertos por km |
+| 11.3 — gestão participativa | O cidadão relata com a câmera do celular, sem cadastro, e a fila prioriza o que a população confirma | Relatos e confirmações por bairro; % validados |
+| 9.1 — infraestrutura de qualidade e resiliente | Detecção precoce leva ao reparo antes de o buraco crescer e de a base do pavimento se degradar | Reparos por mês; reincidência no mesmo ponto |
+| 3.6 — reduzir mortes e lesões no trânsito | Buraco é causa direta de queda de moto e bicicleta; reparar mais rápido e avisar ataca essa causa | Sinistros com motos e bicicletas nas vias monitoradas |
 
 ## Por que importa
 
@@ -45,7 +54,8 @@ pessoa no circuito e privacidade desde o projeto.
 
 ## Resultados
 
-Dataset: **4.192 imagens** (RDD2022 oficial, 5 países, 5.997 buracos D40), split 70/15/15 por trajeto.
+Dataset: **4.192 imagens** (RDD2022 oficial, 5 países, 5.997 buracos D40), split 70/15/15 por blocos de 20 números de
+arquivo — o que **não** separou trajetos: 233 das 622 imagens de teste repetem trechos de via do treino (veja abaixo).
 
 | Modelo | Parâmetros | Val mAP@0,5:0,95 | Teste mAP@0,5 | Teste mAP@0,5:0,95 | Inferência GPU |
 |---|---|---|---|---|---|
@@ -54,9 +64,13 @@ Dataset: **4.192 imagens** (RDD2022 oficial, 5 países, 5.997 buracos D40), spli
 | E3_yolo26s | 9.95 M | 0.264 | 0.589 | 0.260 | 4.7 ms |
 
 * **Modelo de produção (YOLO26n)**, limiar 0.305 (máximo F1 na validação): precisão **70%**, revocação **50%** no teste.
-* Velocidade: **62 FPS** de inferência em GPU (RTX 3070), **39 FPS** em CPU com ONNX; pipeline completo em vídeo 1080p (BoT-SORT + privacidade + HUD) a **18–19 FPS**.
-* ONNX com NMS em paridade com o PyTorch (mAP@0,5 0,582 × 0,585); a variante fim a fim sem NMS perdeu 4,3 p.p. e foi descartada.
-* Vieses medidos por país, iluminação e tamanho (`resultados/analise_teste.json`); 0% de quase-duplicatas entre teste e treino (dHash).
+* **Trechos de via repetidos entre treino e teste:** 233 das 622 imagens de teste mostram o mesmo trecho de via de uma
+  imagem de treino (ORB + homografia RANSAC, `scripts/03b_cenas_repetidas.py`). Sem elas, o **mAP@0,5 cai para cerca de
+  0,55** (0,553 contra 0,583 no teste inteiro, mesmo cálculo) — a estimativa honesta para ruas novas. Na China (moto),
+  19 das 22 imagens de teste repetem trechos do treino. Detalhes em `resultados/cenas_repetidas.json`.
+* Velocidade: **62 FPS** de inferência em GPU (RTX 3070), **39 FPS** em CPU com ONNX; pipeline completo em vídeo (BoT-SORT + privacidade + HUD) a **14–19 FPS**.
+* ONNX com NMS em paridade com o PyTorch (mAP@0,5 0,582 × 0,585); a variante fim a fim sem NMS perdeu 4,3 p.p. e foi descartada (escolha feita no teste e confirmada na validação: `scripts/04b_variantes_onnx_validacao.py`).
+* Vieses medidos por país, iluminação e tamanho (`resultados/analise_teste.json`). O dHash não acha quase-cópias entre teste e treino, mas não detecta o mesmo lugar fotografado em outro momento: por isso a verificação geométrica acima.
 
 | Acertos no teste | Vídeo real em São Paulo (fora do treino) |
 |---|---|
@@ -92,7 +106,9 @@ python scripts/01_preparar_dataset.py --out datasets/vigiavia-rdd2022           
 python scripts/01b_auditar_rotulos.py --data datasets/vigiavia-rdd2022 --saida resultados/auditoria_rotulos_oficial.jpg
 python scripts/02_treinar.py --data datasets/vigiavia-rdd2022/data.yaml --exp E1_yolo26n E2_yolo11n E3_yolo26s
 python scripts/03_avaliar.py --data datasets/vigiavia-rdd2022/data.yaml           # comparação, limiar, vieses, severidade
-python scripts/04_exportar_onnx.py --data datasets/vigiavia-rdd2022/data.yaml     # ONNX fim a fim + paridade
+python scripts/03b_cenas_repetidas.py --data datasets/vigiavia-rdd2022/data.yaml  # trechos de via repetidos treino × teste
+python scripts/04_exportar_onnx.py --data datasets/vigiavia-rdd2022/data.yaml     # variantes ONNX + paridade no teste
+python scripts/04b_variantes_onnx_validacao.py --data datasets/vigiavia-rdd2022/data.yaml   # mesma escolha na validação
 python scripts/05_benchmark_velocidade.py --data datasets/vigiavia-rdd2022/data.yaml
 python scripts/06_baixar_videos_demo.py && python scripts/06b_processar_videos.py  # vídeos reais (Wikimedia Commons)
 pip install -r requirements-dev.txt
@@ -140,10 +156,21 @@ tests/               testes do contrato da API e da severidade (pytest)
   RDD2022 rotulava faixas apagadas, faixas de pedestre e bueiros como "pothole"; passamos a usar a release oficial.
 * **Vieses medidos:** precisão/revocação por país, iluminação e tamanho do buraco (`resultados/analise_teste.json`).
 * **Pessoa no circuito:** a IA só sugere; a zeladoria confirma, descarta ou resolve cada relato.
-* **Minimização (LGPD):** a API não guarda imagens enviadas; o evento leva só o recorte da via; rostos são borrados (YuNet);
-  no modo "no aparelho", a imagem nem sai do celular.
+* **Minimização (LGPD):** a API não guarda imagens enviadas (analisa em memória e descarta); o relato leva só o recorte
+  da via e as coordenadas. No modo de tempo real em Python, rostos são borrados (YuNet) no vídeo de saída e nos recortes;
+  placas ainda não. Na interface web, o modo "no servidor" envia cada quadro à API (sem gravar) e o modo "no aparelho"
+  não envia imagem nenhuma; o recorte do relato feito pela web ainda não passa pelo YuNet (próximo passo).
 * **Segurança:** sem segredos no código; container com usuário não root; instalação automática de pacotes do
   Ultralytics desativada em tempo de execução (`YOLO_AUTOINSTALL=False`).
+
+## Revisão de 09/11/2026
+
+O relatório e este README foram corrigidos depois de uma revisão independente: a divisão por blocos **não** evitou
+vazamento entre treino e teste (nova medição em `scripts/03b_cenas_repetidas.py`); a privacidade agora é descrita por
+modo de uso; o rastreador é o BoT-SORT; a ficha traz a URL do MVP; os dados simulados das telas estão declarados; os
+ODS estão explicados; números que divergiam dos artefatos foram acertados; a interface web foi sincronizada com a
+versão publicada (vídeo com controles, mapa para marcar o local do relato). No vídeo de demonstração, a frase
+"separamos treino e teste por trajeto, para não haver vazamento" foi removida.
 
 ## Licenças e créditos
 

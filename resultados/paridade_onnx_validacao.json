@@ -1,0 +1,16 @@
+{
+  "pytorch_gpu": {
+    "mAP50": 0.5878,
+    "mAP50_95": 0.2549
+  },
+  "onnx_cpu_fim_a_fim": {
+    "mAP50": 0.5521,
+    "mAP50_95": 0.237
+  },
+  "onnx_cpu_com_nms": {
+    "mAP50": 0.5843,
+    "mAP50_95": 0.2551
+  },
+  "regra": "fim a fim se a perda de mAP@0,5:0,95 for < 0,5 p.p.; sen\u00e3o, com NMS",
+  "variante_escolhida_na_validacao": "com_nms"
+}

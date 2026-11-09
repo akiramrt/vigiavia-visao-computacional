@@ -1,0 +1,290 @@
+{
+  "metodo": "1. para cada imagem de teste, os 30 vizinhos de treino mais próximos pelo dHash (256 bits);\n  2. ORB (1.500 pontos, sem capô e sem a faixa do topo) + teste da razão de Lowe + homografia RANSAC;\n  3. \"trecho repetido\" = 20 ou mais correspondências geométricas (inliers) com deslocamento mediano >= 2 px\n     (descarta marcas fixas do para-brisa). Também reportamos o limiar 40 (mais conservador);\n  4. AP@0,5 (interpolação de 101 pontos), precisão, revocação e F1 no limiar de operação, com e sem essas imagens.",
+  "limiar_operacao": 0.305,
+  "por_pais": {
+    "Japan": {
+      "imagens_teste": 258,
+      "trecho_repetido_inliers_20": 49,
+      "trecho_repetido_inliers_40": 45
+    },
+    "India": {
+      "imagens_teste": 274,
+      "trecho_repetido_inliers_20": 156,
+      "trecho_repetido_inliers_40": 134
+    },
+    "China_MotorBike": {
+      "imagens_teste": 22,
+      "trecho_repetido_inliers_20": 19,
+      "trecho_repetido_inliers_40": 19
+    },
+    "Czech": {
+      "imagens_teste": 42,
+      "trecho_repetido_inliers_20": 8,
+      "trecho_repetido_inliers_40": 6
+    },
+    "United_States": {
+      "imagens_teste": 26,
+      "trecho_repetido_inliers_20": 1,
+      "trecho_repetido_inliers_40": 0
+    }
+  },
+  "metricas": {
+    "todas": {
+      "imagens": 622,
+      "buracos": 910,
+      "AP50": 0.583,
+      "VP": 459,
+      "FP": 193,
+      "FN": 451,
+      "precisao": 0.704,
+      "revocacao": 0.504,
+      "f1": 0.588
+    },
+    "com_trecho_repetido_20": {
+      "imagens": 233,
+      "buracos": 469,
+      "AP50": 0.616,
+      "VP": 240,
+      "FP": 91,
+      "FN": 229,
+      "precisao": 0.725,
+      "revocacao": 0.512,
+      "f1": 0.6
+    },
+    "sem_trecho_repetido_20": {
+      "imagens": 389,
+      "buracos": 441,
+      "AP50": 0.553,
+      "VP": 219,
+      "FP": 102,
+      "FN": 222,
+      "precisao": 0.682,
+      "revocacao": 0.497,
+      "f1": 0.575
+    },
+    "com_trecho_repetido_40": {
+      "imagens": 204,
+      "buracos": 423,
+      "AP50": 0.628,
+      "VP": 220,
+      "FP": 83,
+      "FN": 203,
+      "precisao": 0.726,
+      "revocacao": 0.52,
+      "f1": 0.606
+    },
+    "sem_trecho_repetido_40": {
+      "imagens": 418,
+      "buracos": 487,
+      "AP50": 0.548,
+      "VP": 239,
+      "FP": 110,
+      "FN": 248,
+      "precisao": 0.685,
+      "revocacao": 0.491,
+      "f1": 0.572
+    }
+  },
+  "pares_exemplo": [
+    {
+      "teste": "Japan_004157.jpg",
+      "treino": "Japan_012299.jpg",
+      "inliers": 787
+    },
+    {
+      "teste": "India_002122.jpg",
+      "treino": "India_003431.jpg",
+      "inliers": 771
+    },
+    {
+      "teste": "India_009544.jpg",
+      "treino": "India_007518.jpg",
+      "inliers": 692
+    },
+    {
+      "teste": "Japan_012465.jpg",
+      "treino": "Japan_009339.jpg",
+      "inliers": 676
+    },
+    {
+      "teste": "India_009593.jpg",
+      "treino": "India_008572.jpg",
+      "inliers": 667
+    },
+    {
+      "teste": "China_MotorBike_001437.jpg",
+      "treino": "China_MotorBike_000841.jpg",
+      "inliers": 638
+    },
+    {
+      "teste": "Japan_011353.jpg",
+      "treino": "Japan_009644.jpg",
+      "inliers": 621
+    },
+    {
+      "teste": "China_MotorBike_001747.jpg",
+      "treino": "China_MotorBike_000394.jpg",
+      "inliers": 577
+    },
+    {
+      "teste": "India_001903.jpg",
+      "treino": "India_008870.jpg",
+      "inliers": 574
+    },
+    {
+      "teste": "Japan_004352.jpg",
+      "treino": "Japan_006169.jpg",
+      "inliers": 540
+    },
+    {
+      "teste": "Japan_003649.jpg",
+      "treino": "Japan_005906.jpg",
+      "inliers": 515
+    },
+    {
+      "teste": "China_MotorBike_000736.jpg",
+      "treino": "China_MotorBike_000495.jpg",
+      "inliers": 476
+    },
+    {
+      "teste": "Japan_012829.jpg",
+      "treino": "Japan_012295.jpg",
+      "inliers": 450
+    },
+    {
+      "teste": "Japan_011610.jpg",
+      "treino": "Japan_007683.jpg",
+      "inliers": 443
+    },
+    {
+      "teste": "Japan_000924.jpg",
+      "treino": "Japan_008813.jpg",
+      "inliers": 430
+    },
+    {
+      "teste": "China_MotorBike_001424.jpg",
+      "treino": "China_MotorBike_001572.jpg",
+      "inliers": 427
+    },
+    {
+      "teste": "Japan_010839.jpg",
+      "treino": "Japan_012635.jpg",
+      "inliers": 414
+    },
+    {
+      "teste": "Japan_009488.jpg",
+      "treino": "Japan_009386.jpg",
+      "inliers": 405
+    },
+    {
+      "teste": "India_002318.jpg",
+      "treino": "India_008870.jpg",
+      "inliers": 383
+    },
+    {
+      "teste": "China_MotorBike_001680.jpg",
+      "treino": "China_MotorBike_001189.jpg",
+      "inliers": 381
+    },
+    {
+      "teste": "India_000915.jpg",
+      "treino": "India_000893.jpg",
+      "inliers": 377
+    },
+    {
+      "teste": "Japan_002451.jpg",
+      "treino": "Japan_008988.jpg",
+      "inliers": 356
+    },
+    {
+      "teste": "India_004393.jpg",
+      "treino": "India_007240.jpg",
+      "inliers": 355
+    },
+    {
+      "teste": "India_006187.jpg",
+      "treino": "India_003542.jpg",
+      "inliers": 350
+    },
+    {
+      "teste": "China_MotorBike_000088.jpg",
+      "treino": "China_MotorBike_001307.jpg",
+      "inliers": 347
+    },
+    {
+      "teste": "Japan_001338.jpg",
+      "treino": "Japan_012191.jpg",
+      "inliers": 340
+    },
+    {
+      "teste": "Japan_002634.jpg",
+      "treino": "Japan_005451.jpg",
+      "inliers": 340
+    },
+    {
+      "teste": "Japan_005770.jpg",
+      "treino": "Japan_006145.jpg",
+      "inliers": 329
+    },
+    {
+      "teste": "China_MotorBike_000328.jpg",
+      "treino": "China_MotorBike_001876.jpg",
+      "inliers": 328
+    },
+    {
+      "teste": "Japan_011169.jpg",
+      "treino": "Japan_004586.jpg",
+      "inliers": 317
+    },
+    {
+      "teste": "China_MotorBike_001590.jpg",
+      "treino": "China_MotorBike_000150.jpg",
+      "inliers": 314
+    },
+    {
+      "teste": "India_003376.jpg",
+      "treino": "India_005289.jpg",
+      "inliers": 312
+    },
+    {
+      "teste": "India_001101.jpg",
+      "treino": "India_006318.jpg",
+      "inliers": 304
+    },
+    {
+      "teste": "Japan_012546.jpg",
+      "treino": "Japan_008242.jpg",
+      "inliers": 302
+    },
+    {
+      "teste": "Japan_002473.jpg",
+      "treino": "Japan_013062.jpg",
+      "inliers": 295
+    },
+    {
+      "teste": "China_MotorBike_000336.jpg",
+      "treino": "China_MotorBike_000971.jpg",
+      "inliers": 288
+    },
+    {
+      "teste": "India_002573.jpg",
+      "treino": "India_006948.jpg",
+      "inliers": 281
+    },
+    {
+      "teste": "China_MotorBike_001913.jpg",
+      "treino": "China_MotorBike_001550.jpg",
+      "inliers": 267
+    },
+    {
+      "teste": "India_009581.jpg",
+      "treino": "India_005755.jpg",
+      "inliers": 266
+    },
+    {
+      "teste": "India_003951.jpg",
+      "treino": "India_004047.jpg",
+      "inliers": 265
+    }
+  ]
+}

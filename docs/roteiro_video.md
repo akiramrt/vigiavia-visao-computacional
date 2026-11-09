@@ -12,11 +12,15 @@ Buracos causam quedas de motociclistas e ciclistas, danos a veículos e atrasos 
 
 ## 3. solucao
 
-O VigiaVia detecta buracos em tempo real, com a câmera do celular ou de ônibus e caminhões de coleta. Treinamos um detector YOLO26 com o dataset internacional RDD2022, rastreamos cada buraco (ByteTrack) para gerar um único relato, estimamos a severidade e enviamos só um recorte da via e as coordenadas para a fila da zeladoria.
+O VigiaVia detecta buracos em tempo real, com a câmera do celular ou de ônibus e caminhões de coleta. Treinamos um detector YOLO26 com o dataset internacional RDD2022, rastreamos cada buraco (BoT-SORT) para gerar um único relato, estimamos a severidade e enviamos só um recorte da via e as coordenadas para a fila da zeladoria.
 
 ## 4. dados
 
-Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro estavam marcadas como buraco. Usamos a versão oficial (4.192 imagens de cinco países) e separamos treino e teste por trajeto, sem vazamento.
+Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro estavam marcadas como buraco. Usamos a versão oficial (4.192 imagens de cinco países).
+
+> Revisão de 09/11/2026: a frase "(de cinco países) e separamos treino e teste por trajeto, sem vazamento" foi cortada do
+> vídeo (de 1:07,4 a 1:13,2 da versão de 04/11; a fala termina em "…com 4.192 imagens"). A divisão por blocos de números
+> de arquivo não separou trajetos: veja a seção 5.3 do relatório e `scripts/03b_cenas_repetidas.py`.
 
 ## 5. demo_sp
 

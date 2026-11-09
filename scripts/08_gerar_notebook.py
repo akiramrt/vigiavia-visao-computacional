@@ -146,7 +146,7 @@ for ax, p in zip(axs.ravel(), testes):
     vis = hud.desenhar(im, d, det.conf, 0, len(d), det.nome, mostrar_zona=False)
     ax.imshow(cv2.cvtColor(vis, cv2.COLOR_BGR2RGB)); ax.set_title(f"{p.stem}: {len(d)} buraco(s)"); ax.axis("off")
 plt.tight_layout(); plt.show()"""),
-    md("""## 7. Tempo real: detecção + ByteTrack + HUD de realidade aumentada
+    md("""## 7. Tempo real: detecção + BoT-SORT + HUD de realidade aumentada
 
 Vídeo real de São Paulo (Rua Sílvia, Bela Vista — Daniel Fraga, CC BY 3.0, Wikimedia Commons), **nunca visto no
 treino**. Cada buraco recebe um ID; um evento só é emitido quando a trilha é confirmada (≥ 3 quadros e confiança ≥

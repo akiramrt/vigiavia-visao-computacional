@@ -1,21 +1,37 @@
 /* VigiaVia — interface web do componente de visão computacional.
- * Modo "servidor": cada quadro vai para POST /v1/deteccoes (GPU).
+ * Modo "servidor": cada quadro, reduzido ao tamanho de entrada do modelo (640 px), vai para POST /v1/deteccoes
+ * (ONNX Runtime no servidor). Até 2 quadros ficam em análise ao mesmo tempo: o gargalo medido é a rede
+ * (~250 ms de ida e volta para ~65 ms de inferência), não o modelo.
  * Modo "aparelho": o modelo ONNX roda no navegador (onnxruntime-web) e a imagem nunca sai do celular.
+ * Vídeo e câmera aparecem no próprio <video> (fluido, com controles); as caixas vão numa camada transparente por cima.
  */
 "use strict";
 const $ = (s) => document.querySelector(s);
 const ORT_URL = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.webgpu.min.js";
 const ORT_WASM = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+// Os serviços do OpenStreetMap (tiles e busca de endereço) exigem Referer, e a página usa Referrer-Policy:
+// no-referrer. Só esses pedidos enviam a origem, nunca o caminho: https://operations.osmfoundation.org/policies/
+const REF_OSM = "strict-origin-when-cross-origin";
+const OSM_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const OSM_OPCOES = { maxZoom: 19, attribution: "© OpenStreetMap", referrerPolicy: REF_OSM };
 const ROTULO = { baixa: "BAIXA", media: "MÉDIA", alta: "ALTA" };
 const COR = { baixa: "#ffd400", media: "#ff8c00", alta: "#ff3b30" };
+const PESO_SEV = { baixa: 1, media: 2, alta: 3 };
+const fmtPrio = (v) => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 1 });   // 7.755 -> "7,8"
+const fmtTempo = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const EXT_VIDEO = /\.(mp4|m4v|mov|webm|ogv|mkv|avi|3gp)$/i;
 
 const st = {
-  modelo: null, rodando: false, stream: null, deteccoes: [], ort: null, sessao: null,
-  ultimaVoz: 0, fpsEma: 0, mapa: null, camadaMapa: null,
+  modelo: null, sessao: null, fonte: null, rodando: false, stream: null, ultimaVoz: 0,
+  geracao: 0,          // muda a cada troca de fonte; resultados atrasados da fonte anterior são descartados
+  seq: 0, exibido: 0,  // ordem dos quadros enviados e do último exibido (resposta fora de ordem é ignorada)
+  emVoo: 0, tempoAnalisado: -1, pausaAte: 0, taxa: 0, tempos: [], rtt: 0, ultimoEnvio: 0,
+  atual: null,         // quadro exibido agora, se tem buraco: { q, d, severidade, confianca }
+  candidato: null,     // quadro com a detecção mais confiante da fonte atual
+  enviando: false,
+  mapa: null, camadaMapa: null, mapaLocal: null, pino: null,
 };
-const quadro = document.createElement("canvas");        // quadro limpo (detecção e recorte)
-const tela = $("#tela"), ctx = tela.getContext("2d");
-const video = $("#video");
+const tela = $("#tela"), ctx = tela.getContext("2d"), video = $("#video"), palco = $("#palco");
 
 /* ------------------------------------------------------------------ abas (teclado acessível) */
 const abas = [...document.querySelectorAll('[role="tab"]')];
@@ -26,6 +42,7 @@ function ativarAba(aba) {
     a.tabIndex = sel ? 0 : -1;
     $("#" + a.getAttribute("aria-controls")).hidden = !sel;
   });
+  if (aba.id === "tab-cidadao" && st.mapaLocal) setTimeout(() => st.mapaLocal.invalidateSize(), 50);
   if (aba.id === "tab-zeladoria") carregarFila();
   if (aba.id === "tab-modelo") mostrarModelo();
 }
@@ -67,15 +84,17 @@ function dentro(pt, poli) {  // ray casting
   return d;
 }
 
+function capturar(fonte, w, h) {   // cada quadro analisado tem o próprio canvas: é dele que sai o recorte do relato
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  c.getContext("2d").drawImage(fonte, 0, 0, w, h);
+  return c;
+}
+
 /* ------------------------------------------------------------------ detecção no servidor */
-async function detectarServidor() {
-  const esc = Math.min(1, 1280 / quadro.width);
-  let fonte = quadro;
-  if (esc < 1) {
-    fonte = document.createElement("canvas");
-    fonte.width = Math.round(quadro.width * esc); fonte.height = Math.round(quadro.height * esc);
-    fonte.getContext("2d").drawImage(quadro, 0, 0, fonte.width, fonte.height);
-  }
+async function detectarServidor(q) {
+  const lado = st.modelo?.imgsz || 640;     // o modelo trabalha em 640 px: mandar mais que isso é só tempo de rede
+  const esc = Math.min(1, lado / Math.max(q.width, q.height));
+  const fonte = esc < 1 ? capturar(q, Math.round(q.width * esc), Math.round(q.height * esc)) : q;
   const blob = await new Promise((r) => fonte.toBlob(r, "image/jpeg", 0.85));
   const fd = new FormData(); fd.append("imagem", blob, "quadro.jpg");
   const resp = await fetch(`/v1/deteccoes?conf=${confAtual()}`, { method: "POST", body: fd });
@@ -111,15 +130,15 @@ function nms(caixas, iou = 0.5) {
   }
   return out;
 }
-async function detectarAparelho() {
+async function detectarAparelho(q) {
   await prepararOnnx();
-  const S = st.modelo.imgsz || 640, W = quadro.width, H = quadro.height;
+  const S = st.modelo.imgsz || 640, W = q.width, H = q.height;
   const r = Math.min(S / W, S / H), nw = Math.round(W * r), nh = Math.round(H * r);
   const px = Math.floor((S - nw) / 2), py = Math.floor((S - nh) / 2);
   const lb = document.createElement("canvas"); lb.width = S; lb.height = S;
   const lctx = lb.getContext("2d");
   lctx.fillStyle = "rgb(114,114,114)"; lctx.fillRect(0, 0, S, S);
-  lctx.drawImage(quadro, px, py, nw, nh);
+  lctx.drawImage(q, px, py, nw, nh);
   const { data } = lctx.getImageData(0, 0, S, S);
   const t = new Float32Array(3 * S * S);
   for (let i = 0, p = 0; i < S * S; i++, p += 4) {
@@ -152,9 +171,18 @@ async function detectarAparelho() {
 }
 
 /* ------------------------------------------------------------------ desenho (AR) */
-function desenhar(dets) {
+function ajustarTela(w, h) {
+  if (tela.width !== w || tela.height !== h) { tela.width = w; tela.height = h; }
+  $("#vazio").hidden = true;
+}
+function limparTela() {
+  ctx.clearRect(0, 0, tela.width, tela.height);
+  $("#alerta").hidden = true; $("#lista-det").innerHTML = "";
+}
+function desenhar(dets, q) {
   const W = tela.width, H = tela.height, u = Math.max(1, W / 1280);
-  ctx.drawImage(quadro, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  if (st.fonte === "foto") ctx.drawImage(q, 0, 0);   // no vídeo e na câmera, a imagem é o próprio <video>, por baixo
   const alerta = dets.some((d) => d.na_trajetoria && d.confianca >= confAtual());
   const z = zonaPx(W, H);
   ctx.beginPath(); z.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
@@ -183,105 +211,244 @@ function desenhar(dets) {
       <span class="chip ${d.severidade}">${ROTULO[d.severidade]}</span>`;
     lista.appendChild(li);
   });
-  $("#btn-relatar").disabled = dets.length === 0;
 }
 
-function prepararTela(w, h) {
-  quadro.width = tela.width = w; quadro.height = tela.height = h;
-  $("#vazio").hidden = true;
+/* ------------------------------------------------------------------ análise dos quadros */
+const maxEmVoo = () => ($("#modo").value === "servidor" ? 2 : 1);
+function resumo(dets, q) {
+  const d = dets.reduce((a, b) => (b.confianca > a.confianca ? b : a));
+  const sev = dets.reduce((m, x) => (PESO_SEV[x.severidade] > PESO_SEV[m] ? x.severidade : m), "baixa");
+  return { q, d, severidade: sev, confianca: d.confianca };
 }
-
-async function detectarQuadro() {
-  const t0 = performance.now();
-  const dets = $("#modo").value === "aparelho" ? await detectarAparelho() : await detectarServidor();
-  st.deteccoes = dets;
-  desenhar(dets);
-  const fps = 1000 / (performance.now() - t0);
-  st.fpsEma = st.fpsEma ? 0.85 * st.fpsEma + 0.15 * fps : fps;
-  return dets;
-}
-
-/* ------------------------------------------------------------------ câmera / vídeo / foto */
-async function laco() {
-  while (st.rodando) {
-    if (video.readyState >= 2 && !video.ended) {
-      if (quadro.width !== video.videoWidth) prepararTela(video.videoWidth, video.videoHeight);
-      quadro.getContext("2d").drawImage(video, 0, 0);
-      try { const d = await detectarQuadro(); status(`${d.length} buraco(s) · ${st.fpsEma.toFixed(1)} FPS · ${$("#modo").value}`); }
-      catch (e) { status("Erro na detecção: " + e.message); await new Promise((r) => setTimeout(r, 800)); }
-    } else if (video.ended) { parar(); break; }
-    await new Promise((r) => requestAnimationFrame(r));
+async function analisar(q) {
+  const g = st.geracao, seq = ++st.seq, t0 = performance.now();
+  st.emVoo++;
+  try {
+    const dets = $("#modo").value === "aparelho" ? await detectarAparelho(q) : await detectarServidor(q);
+    const ida = performance.now() - t0;
+    st.rtt = st.rtt ? 0.8 * st.rtt + 0.2 * ida : ida;
+    if (g !== st.geracao || seq < st.exibido) return null;   // fonte trocada ou resposta fora de ordem
+    st.exibido = seq;
+    desenhar(dets, q);
+    st.atual = dets.length ? resumo(dets, q) : null;
+    if (st.atual && (!st.candidato || st.atual.confianca > st.candidato.confianca)) st.candidato = st.atual;
+    atualizarBotao();
+    // Taxa = análises nas últimas 12 respostas ÷ tempo entre elas (com 2 em análise, as respostas chegam em pares;
+    // só aparece depois de 6 respostas, para não mostrar um número absurdo logo no início).
+    const agora = performance.now();
+    st.tempos.push(agora);
+    if (st.tempos.length > 12) st.tempos.shift();
+    st.taxa = st.tempos.length >= 6 ? ((st.tempos.length - 1) * 1000) / (agora - st.tempos[0]) : 0;
+    return dets;
+  } finally {
+    if (g === st.geracao) st.emVoo--;
   }
 }
+function mostrarStatus(d) {
+  const n = `${d.length} buraco(s)`;
+  if (st.fonte === "video" && video.ended) {
+    status(st.candidato ? "Vídeo terminado. Buraco detectado: já dá para enviar o relato (ou volte a barra até ele)."
+                        : "Vídeo terminado. Nenhum buraco detectado.");
+  } else if (st.fonte === "video" && video.paused) {
+    status(`Pausado em ${fmtTempo(video.currentTime)} · ${n} neste quadro${d.length ? " · o relato vai com este quadro" : ""}`);
+  } else {
+    status(`${n} · ${st.taxa ? st.taxa.toFixed(1).replace(".", ",") : "…"} análises/s · ${$("#modo").value}`);
+  }
+}
+// O vídeo toca sozinho; o laço só decide quando mandar um quadro: sempre que houver vaga e o quadro for novo
+// (tocando, quase sempre; pausado, uma vez ao pausar e a cada vez que a barra é arrastada). Com 2 em análise, os
+// envios ficam espaçados em meia ida e volta: as respostas chegam distribuídas, e não em pares quase iguais.
+function laco() {
+  const g = st.geracao;
+  const passo = () => {
+    if (!st.rodando || g !== st.geracao) return;
+    if (video.readyState >= 2 && video.videoWidth) {
+      ajustarTela(video.videoWidth, video.videoHeight);
+      const agora = performance.now(), vagas = maxEmVoo();
+      const quadroNovo = video.currentTime !== st.tempoAnalisado;
+      const espacado = vagas === 1 || agora - st.ultimoEnvio >= (st.rtt || 0) / vagas;
+      if (quadroNovo && espacado && st.emVoo < vagas && agora >= st.pausaAte) {
+        st.tempoAnalisado = video.currentTime; st.ultimoEnvio = agora;
+        analisar(capturar(video, video.videoWidth, video.videoHeight))
+          .then((d) => { if (d) mostrarStatus(d); })
+          .catch((e) => { st.pausaAte = performance.now() + 1000; status("Erro na detecção: " + e.message); });
+      }
+    }
+    requestAnimationFrame(passo);
+  };
+  requestAnimationFrame(passo);
+}
+function iniciarAnalise() {
+  if (st.rodando) return;
+  st.rodando = true; st.tempoAnalisado = -1; st.tempos = []; st.taxa = 0;
+  $("#btn-parar").hidden = false;
+  laco();
+}
 function parar() {
-  st.rodando = false;
+  st.rodando = false; st.geracao++; st.emVoo = 0;
   st.stream?.getTracks().forEach((t) => t.stop()); st.stream = null;
   video.pause(); $("#btn-parar").hidden = true; $("#alerta").hidden = true;
 }
-$("#btn-parar").addEventListener("click", parar);
+function novaFonte(fonte) {
+  parar(); limparCandidato(); limparTela();
+  if (video.srcObject || video.getAttribute("src")) { video.srcObject = null; video.removeAttribute("src"); video.load(); }
+  st.fonte = fonte;
+  palco.classList.toggle("sobre-video", fonte !== "foto");
+  video.hidden = fonte === "foto";
+  video.controls = fonte === "video";
+}
+
+/* ------------------------------------------------------------------ câmera / vídeo / foto */
+$("#btn-parar").addEventListener("click", () => {
+  parar();
+  if (st.fonte === "camera") { limparTela(); status("Câmera desligada."); }   // sem imagem por baixo, as caixas somem
+});
+video.addEventListener("play", () => { st.tempos = []; st.taxa = 0; if (st.fonte === "video") iniciarAnalise(); });
+video.addEventListener("pause", () => { st.tempos = []; st.taxa = 0; });
 $("#btn-camera").addEventListener("click", async () => {
   try {
-    parar();
+    novaFonte("camera");
     st.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
-    video.srcObject = st.stream; video.hidden = false; await video.play();
-    st.rodando = true; $("#btn-parar").hidden = false; laco();
+    video.srcObject = st.stream; await video.play(); iniciarAnalise();
   } catch (e) { status("Não foi possível abrir a câmera: " + e.message); }
 });
 $("#arquivo").addEventListener("change", async (ev) => {
-  const f = ev.target.files[0]; if (!f) return;
-  parar();
-  const url = URL.createObjectURL(f);
-  if (f.type.startsWith("video/")) {
-    video.srcObject = null; video.src = url; video.hidden = false; await video.play();
-    st.rodando = true; $("#btn-parar").hidden = false; laco();
+  const f = ev.target.files[0];
+  ev.target.value = "";                      // escolher o mesmo arquivo de novo também dispara "change"
+  if (!f) return;
+  const ehVideo = f.type.startsWith("video/") || (!f.type && EXT_VIDEO.test(f.name));
+  novaFonte(ehVideo ? "video" : "foto");
+  if (st.urlArquivo) URL.revokeObjectURL(st.urlArquivo);
+  const url = (st.urlArquivo = URL.createObjectURL(f));
+  if (ehVideo) {
+    status("Abrindo o vídeo…");
+    try {
+      video.src = url; await video.play(); iniciarAnalise();
+    } catch (e) {
+      status(`Não foi possível abrir este vídeo (${e.message}). Tente um MP4 (H.264) ou WebM.`);
+    }
   } else {
     const img = new Image();
-    img.onload = async () => {
-      prepararTela(img.naturalWidth, img.naturalHeight);
-      quadro.getContext("2d").drawImage(img, 0, 0);
-      status("Analisando…");
-      try { const d = await detectarQuadro(); status(`${d.length} buraco(s) detectado(s).`); }
-      catch (e) { status("Erro: " + e.message); }
-    };
+    img.onload = () => analisarFoto(img).catch((e) => status("Erro: " + e.message));
+    img.onerror = () => status("Não foi possível abrir este arquivo. Envie uma foto (JPG ou PNG) ou um vídeo (MP4 ou WebM).");
     img.src = url;
   }
 });
+async function analisarFoto(img, exemplo = "") {
+  const q = capturar(img, img.naturalWidth, img.naturalHeight);
+  ajustarTela(q.width, q.height); ctx.drawImage(q, 0, 0);
+  status("Analisando…");
+  const d = await analisar(q);
+  if (d) status(`${d.length} buraco(s) detectado(s)${exemplo ? " · exemplo " + exemplo : "."}`);
+}
 
-/* ------------------------------------------------------------------ relato */
+/* ------------------------------------------------------------------ local do buraco (mapa) */
+const msgLocal = (t, ok = true) => { const el = $("#local-msg"); el.className = "ajuda" + (ok ? "" : " erro-txt"); el.textContent = t; };
+function iniciarMapaLocal() {
+  if (!window.L || st.mapaLocal) return;
+  const pos = [parseFloat($("#lat").value), parseFloat($("#lon").value)];
+  st.mapaLocal = L.map("mapa-local", { scrollWheelZoom: false }).setView(pos, 16);
+  L.tileLayer(OSM_TILES, OSM_OPCOES).addTo(st.mapaLocal);
+  st.pino = L.marker(pos, { draggable: true, autoPan: true, title: "Local do buraco (arraste)", alt: "Local do buraco",
+    icon: L.divIcon({ className: "pino", iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(st.mapaLocal);
+  st.pino.on("dragend", () => definirLocal(st.pino.getLatLng(), false));
+  st.mapaLocal.on("click", (e) => definirLocal(e.latlng, false));
+}
+function definirLocal({ lat, lng }, centralizar = true) {
+  $("#lat").value = lat.toFixed(6); $("#lon").value = lng.toFixed(6);
+  if (!st.pino) return;
+  st.pino.setLatLng([lat, lng]);
+  if (centralizar) st.mapaLocal.setView([lat, lng], Math.max(st.mapaLocal.getZoom(), 17));
+}
+["#lat", "#lon"].forEach((s) => $(s).addEventListener("change", () => {
+  const lat = parseFloat($("#lat").value), lng = parseFloat($("#lon").value);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) definirLocal({ lat, lng });
+}));
+// Busca sob demanda (um pedido por clique, sem autocompletar), como pede a política de uso do Nominatim.
+$("#form-busca").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = $("#busca-endereco").value.trim();
+  if (!q) return;
+  const btn = $("#btn-buscar"); btn.disabled = true; msgLocal("Buscando o endereço…");
+  try {
+    const p = new URLSearchParams({ q, format: "jsonv2", limit: "1", countrycodes: "br", "accept-language": "pt-BR" });
+    if (st.mapaLocal) {
+      const b = st.mapaLocal.getBounds();
+      p.set("viewbox", [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].map((v) => v.toFixed(5)).join(","));
+    }
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?${p}`, { referrerPolicy: REF_OSM });
+    if (!r.ok) throw new Error(`busca ${r.status}`);
+    const [achado] = await r.json();
+    if (!achado) { msgLocal("Endereço não encontrado. Tente incluir o bairro ou a cidade.", false); return; }
+    definirLocal({ lat: parseFloat(achado.lat), lng: parseFloat(achado.lon) });
+    msgLocal("Local: " + achado.display_name);
+  } catch (err) {
+    msgLocal("Não foi possível buscar o endereço: " + err.message, false);
+  } finally { btn.disabled = false; }
+});
 $("#btn-gps").addEventListener("click", () => {
-  if (!navigator.geolocation) return status("Geolocalização indisponível neste navegador.");
+  if (!navigator.geolocation) return msgLocal("Geolocalização indisponível neste navegador.", false);
+  msgLocal("Obtendo a sua localização…");
   navigator.geolocation.getCurrentPosition(
-    (p) => { $("#lat").value = p.coords.latitude.toFixed(6); $("#lon").value = p.coords.longitude.toFixed(6); status(`Localização obtida (±${Math.round(p.coords.accuracy)} m).`); },
-    (e) => status("Localização negada — informe as coordenadas manualmente. " + e.message),
+    (p) => { definirLocal({ lat: p.coords.latitude, lng: p.coords.longitude }); msgLocal(`Localização obtida (±${Math.round(p.coords.accuracy)} m).`); },
+    (e) => msgLocal("Localização negada: marque o local no mapa ou busque o endereço. " + e.message, false),
     { enableHighAccuracy: true, timeout: 10000 });
 });
-function recorteEvidencia(d) {
+
+/* ------------------------------------------------------------------ relato */
+function recorteEvidencia({ q, d }) {
   const m = 0.25, w = d.x2 - d.x1, h = d.y2 - d.y1;
   const x = Math.max(0, d.x1 - w * m), y = Math.max(0, d.y1 - h * m);
-  const x2 = Math.min(quadro.width, d.x2 + w * m), y2 = Math.min(quadro.height, d.y2 + h * m);
+  const x2 = Math.min(q.width, d.x2 + w * m), y2 = Math.min(q.height, d.y2 + h * m);
   const esc = Math.min(1, 480 / Math.max(x2 - x, y2 - y));
   const c = document.createElement("canvas"); c.width = Math.round((x2 - x) * esc); c.height = Math.round((y2 - y) * esc);
-  c.getContext("2d").drawImage(quadro, x, y, x2 - x, y2 - y, 0, 0, c.width, c.height);
+  c.getContext("2d").drawImage(q, x, y, x2 - x, y2 - y, 0, 0, c.width, c.height);
   return c.toDataURL("image/jpeg", 0.8).split(",")[1];
 }
+function atualizarBotao() { $("#btn-relatar").disabled = !st.candidato || st.enviando; }
+function limparCandidato() {
+  st.candidato = null; st.atual = null; atualizarBotao(); $("#resposta").textContent = "";
+}
+// Vídeo pausado num quadro com buraco: vai esse quadro (o que a pessoa está vendo). Senão, o mais confiante.
+function quadroDoRelato() {
+  const pausado = st.fonte === "video" && (video.paused || video.ended);
+  return pausado && st.atual ? st.atual : st.candidato;
+}
 $("#btn-relatar").addEventListener("click", async () => {
-  const d = [...st.deteccoes].sort((a, b) => b.confianca - a.confianca)[0];
-  if (!d) return;
-  const pesoSev = { baixa: 1, media: 2, alta: 3 };
-  const sevMax = st.deteccoes.reduce((m, x) => (pesoSev[x.severidade] > pesoSev[m] ? x.severidade : m), "baixa");
-  const corpo = { lat: parseFloat($("#lat").value), lon: parseFloat($("#lon").value), severidade: sevMax,
-    confianca_max: d.confianca, origem: "cidadao", modelo: st.modelo?.modelo, evidencia_jpg_base64: recorteEvidencia(d) };
-  const r = await fetch("/v1/relatos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
-  const j = await r.json();
+  const c = quadroDoRelato();
+  if (!c) return;
   const el = $("#resposta");
-  el.className = "resposta " + (r.ok ? "ok" : "erro");
-  el.textContent = r.ok ? `${j.mensagem} (prioridade ${j.relato.prioridade}).` : `Erro: ${JSON.stringify(j.detail)}`;
+  const lat = parseFloat($("#lat").value), lon = parseFloat($("#lon").value);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    el.className = "resposta erro"; el.textContent = "Marque no mapa onde está o buraco."; return;
+  }
+  const corpo = { lat, lon, severidade: c.severidade, confianca_max: c.confianca, origem: "cidadao",
+    modelo: st.modelo?.modelo, evidencia_jpg_base64: recorteEvidencia(c) };
+  st.enviando = true; atualizarBotao(); el.className = "resposta"; el.textContent = "Enviando…";
+  try {
+    const r = await fetch("/v1/relatos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+    const j = await r.json();
+    el.className = "resposta " + (r.ok ? "ok" : "erro");
+    el.textContent = r.ok ? `${j.mensagem} (prioridade ${fmtPrio(j.relato.prioridade)}).` : `Erro: ${JSON.stringify(j.detail)}`;
+    if (r.ok) { st.candidato = null; st.atual = null; }   // o mesmo buraco não vai duas vezes sem querer
+  } catch (e) {
+    el.className = "resposta erro"; el.textContent = "Não foi possível enviar o relato: " + e.message;
+  } finally {
+    st.enviando = false; atualizarBotao();
+  }
 });
 
 /* ------------------------------------------------------------------ zeladoria */
+const ACOES = [["confirmado", "Validar"], ["descartado", "Descartar"], ["resolvido", "Resolvido"]];
+const msgFila = (t, ok = true) => { const el = $("#fila-msg"); el.className = "resposta " + (ok ? "ok" : "erro"); el.textContent = t; };
 async function carregarFila() {
-  const j = await (await fetch("/v1/relatos")).json();
-  const rel = j.relatos;
+  let rel;
+  try {
+    const r = await fetch("/v1/relatos");
+    if (!r.ok) throw new Error(`API ${r.status}`);
+    rel = (await r.json()).relatos;
+  } catch (e) { msgFila("Não foi possível carregar a fila: " + e.message, false); return; }
+  if ($("#fila-msg").classList.contains("erro")) $("#fila-msg").textContent = "";
   const c = (f) => rel.filter(f).length;
   $("#kpis").innerHTML = [
     ["Relatos abertos", c((r) => r.status === "pendente" || r.status === "confirmado")],
@@ -293,21 +460,26 @@ async function carregarFila() {
   const tb = $("#fila"); tb.innerHTML = "";
   for (const r of rel) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td><b>${r.prioridade}</b></td>
+    tr.innerHTML = `<td><b>${fmtPrio(r.prioridade)}</b></td>
       <td>${r.tem_evidencia ? `<img src="/v1/relatos/${r.id}/evidencia" alt="Recorte da via com o buraco">` : "—"}</td>
       <td><span class="chip ${r.severidade}">${ROTULO[r.severidade]}</span></td>
       <td>${r.confirmacoes}</td><td>${(r.confianca_max * 100).toFixed(0)}%</td><td>${r.status}</td>
-      <td>${["confirmado", "descartado", "resolvido"].map((s) => `<button class="mini" data-id="${r.id}" data-s="${s}">${s}</button>`).join("")}</td>`;
+      <td class="acoes-fila">${ACOES.map(([s, rotulo]) => `<button class="mini" data-id="${r.id}" data-s="${s}"${r.status === s ? " disabled" : ""}>${rotulo}</button>`).join("")}</td>`;
     tb.appendChild(tr);
   }
   tb.querySelectorAll("button").forEach((b) => b.addEventListener("click", async () => {
-    await fetch(`/v1/relatos/${b.dataset.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: b.dataset.s }) });
+    b.disabled = true;
+    try {
+      const r = await fetch(`/v1/relatos/${b.dataset.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: b.dataset.s }) });
+      if (!r.ok) throw new Error(`API ${r.status}`);
+      msgFila(`Relato atualizado: ${b.dataset.s}${b.dataset.s === "confirmado" ? " (vira ordem de serviço)" : ""}.`);
+    } catch (e) { msgFila("Não foi possível atualizar o relato: " + e.message, false); }
     carregarFila();
   }));
   if (window.L) {
     if (!st.mapa) {
       st.mapa = L.map("mapa").setView([-23.5603, -46.6505], 15);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(st.mapa);
+      L.tileLayer(OSM_TILES, OSM_OPCOES).addTo(st.mapa);
       st.camadaMapa = L.layerGroup().addTo(st.mapa);
     }
     st.camadaMapa.clearLayers();
@@ -340,14 +512,13 @@ async function mostrarModelo() {
 
 /* ------------------------------------------------------------------ início */
 async function analisarImagemUrl(url) {
+  novaFonte("foto");
   const img = new Image();
   await new Promise((ok, falha) => { img.onload = ok; img.onerror = falha; img.src = url; });
-  prepararTela(img.naturalWidth, img.naturalHeight);
-  quadro.getContext("2d").drawImage(img, 0, 0);
-  const d = await detectarQuadro();
-  status(`${d.length} buraco(s) detectado(s) · exemplo ${url.split("/").pop()}`);
+  await analisarFoto(img, url.split("/").pop());
 }
 
+iniciarMapaLocal();
 (async () => {
   try {
     st.modelo = await (await fetch("/v1/modelo")).json();

@@ -17,7 +17,7 @@
   </defs>
   <rect x="0" y="0" width="1600" height="820" fill="#ffffff"/>
   <text x="40" y="44" style="font-size:26px;font-weight:800;fill:#13202b">VigiaVia — componente de Visão Computacional no MVP</text>
-  <text x="40" y="72" class="tt">Do quadro de vídeo ao chamado priorizado: a imagem é processada na borda e só um recorte da via + coordenadas seguem adiante.</text>
+  <text x="40" y="72" class="tt">Do quadro de vídeo ao chamado priorizado: a imagem é analisada no aparelho ou na API (sem ser gravada) e só um recorte da via + coordenadas seguem para a fila.</text>
 
   <!-- coluna 1: fontes -->
   <text x="40" y="118" class="h">FONTES DE IMAGEM</text>
@@ -44,14 +44,14 @@
     <text x="450" y="248" class="tb">2 · Detector YOLO26 (fine-tuning no RDD2022)</text>
     <text x="450" y="270" class="tt">classe "buraco" · PyTorch na GPU ou ONNX Runtime (CPU / navegador)</text>
     <rect x="430" y="298" width="500" height="62" rx="10" fill="#fff" stroke="#c9d2db" stroke-width="1.5"/>
-    <text x="450" y="324" class="tb">3 · Rastreamento ByteTrack</text>
-    <text x="450" y="346" class="tt">ID único por buraco → 1 evento por buraco, não por quadro</text>
+    <text x="450" y="324" class="tb">3 · Rastreamento BoT-SORT</text>
+    <text x="450" y="346" class="tt">ID por buraco, compensando o movimento da câmera → eventos, não quadros</text>
     <rect x="430" y="374" width="500" height="62" rx="10" fill="#fff" stroke="#c9d2db" stroke-width="1.5"/>
     <text x="450" y="400" class="tb">4 · Severidade + zona de trajetória (AR)</text>
     <text x="450" y="422" class="tt">área corrigida por perspectiva · alerta "buraco à frente" + voz</text>
     <rect x="430" y="450" width="500" height="62" rx="10" fill="#fff" stroke="#3ccf7a" stroke-width="2"/>
     <text x="450" y="476" class="tb">5 · Privacidade by design (LGPD)</text>
-    <text x="450" y="498" class="tt">rostos borrados (YuNet) · só o recorte da via é guardado</text>
+    <text x="450" y="498" class="tt">rostos borrados (YuNet, modo tempo real) · só o recorte da via é guardado</text>
     <rect x="430" y="526" width="500" height="62" rx="10" fill="#13202b"/>
     <text x="450" y="552" class="tb" style="fill:#fff">6 · Evento JSON</text>
     <text x="450" y="574" class="tt" style="fill:#c9d2db">lat, lon, severidade, confiança, recorte, modelo</text>
@@ -103,7 +103,7 @@
   <!-- rodapé -->
   <rect x="40" y="690" width="1520" height="96" rx="12" fill="#f6f7f9"/>
   <text x="60" y="722" class="tb">Por que assim?</text>
-  <text x="60" y="748" class="t">• Rastreamento transforma centenas de quadros em UM relato por buraco, e o raio de deduplicação junta relatos de cidadãos diferentes.</text>
-  <text x="60" y="772" class="t">• ONNX roda no próprio celular (sem internet, a imagem não sai do aparelho); a GPU no servidor atende câmeras veiculares em tempo real.</text>
+  <text x="60" y="748" class="t">• Rastreamento agrupa centenas de quadros em poucos eventos por buraco, e o raio de deduplicação junta relatos de cidadãos diferentes.</text>
+  <text x="60" y="772" class="t">• ONNX roda no próprio celular (depois de baixado; a imagem não sai do aparelho); a GPU no servidor atende câmeras veiculares em tempo real.</text>
 </svg>
 </body></html>

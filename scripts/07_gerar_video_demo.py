@@ -374,7 +374,7 @@ def main() -> None:
                  f"rastreamos cada buraco para gerar um único relato, estimamos a severidade, e enviamos só um recorte "
                  f"da via e as coordenadas para a fila da zeladoria.",
          "legenda": "O VigiaVia detecta buracos em tempo real, com a câmera do celular ou de ônibus e caminhões de coleta. "
-                    "Treinamos um detector YOLO26 com o dataset internacional RDD2022, rastreamos cada buraco (ByteTrack) "
+                    "Treinamos um detector YOLO26 com o dataset internacional RDD2022, rastreamos cada buraco (BoT-SORT) "
                     "para gerar um único relato, estimamos a severidade e enviamos só um recorte da via e as coordenadas "
                     "para a fila da zeladoria."},
         {"id": "dados", "min_dur": 11, "imagem": cartao_figura(
@@ -382,11 +382,11 @@ def main() -> None:
             [res / "auditoria_rotulos_redistribuicao_hf.jpg", res / "auditoria_rotulos_oficial.jpg"],
             ["Esquerda: cópia com rótulos trocados (faixas, bueiros)  ·  Direita: buracos reais (D40 oficial)"]),
          "fala": f"Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro "
-                 f"estavam marcadas como buraco. Usamos a versão oficial, com {n['n_total']} imagens de cinco países, e "
-                 f"separamos treino e teste por trajeto, para não haver vazamento.",
+                 f"estavam marcadas como buraco. Usamos a versão oficial, com {n['n_total']} imagens de cinco países.",
          "legenda": f"Antes de treinar, auditamos os rótulos: numa cópia do dataset, faixas apagadas e tampas de bueiro "
-                    f"estavam marcadas como buraco. Usamos a versão oficial ({n['n_total']} imagens de cinco países) e "
-                    f"separamos treino e teste por trajeto, sem vazamento."},
+                    f"estavam marcadas como buraco. Usamos a versão oficial ({n['n_total']} imagens de cinco países)."},
+        # Revisão de 09/11/2026: removida a frase "separamos treino e teste por trajeto, sem vazamento" — a divisão por
+        # blocos de números de arquivo não separou trajetos (scripts/03b_cenas_repetidas.py).
         {"id": "demo_sp", "clipes": [args.clipes / "sp_bela_vista_rua_silvia.mp4"], "min_dur": 14, "max_dur": 27,
          "fala": "Este é um vídeo real gravado na Rua Sílvia, na Bela Vista, em São Paulo. O modelo nunca viu este vídeo, "
                  "nem imagens do Brasil, durante o treino. Cada caixa mostra a confiança e a severidade estimada, e quando "

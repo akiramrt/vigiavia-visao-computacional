@@ -17,8 +17,10 @@ Regras de seleção (documentadas no relatório):
     China_Drone (visão aérea) fica de fora; Norway (imagens 3.650 px) também, pelo custo de download.
   * Positivas: imagens com >= 1 caixa D40. Negativas: amostra (semente fixa) de imagens SEM buraco,
     na proporção --neg-ratio das positivas — elas têm trincas, faixas e bueiros e ensinam o que NÃO é buraco.
-  * Split 70/15/15 em BLOCOS de --bloco quadros consecutivos (mesmo trajeto), para reduzir vazamento de
-    quadros quase idênticos entre treino e teste. (O teste oficial do RDD2022 não tem rótulos públicos.)
+  * Split 70/15/15 em BLOCOS de --bloco números de arquivo consecutivos, supondo que fossem quadros do mesmo trajeto.
+    (O teste oficial do RDD2022 não tem rótulos públicos.) Atenção: no RDD2022 os números NÃO seguem o trajeto, e o
+    mesmo trecho de via cai no treino e no teste — scripts/03b_cenas_repetidas.py mede o efeito. Correção futura:
+    agrupar por local (similaridade de cena) antes de dividir.
 
 Uso:
     python scripts/01_preparar_dataset.py --out datasets/vigiavia-rdd2022

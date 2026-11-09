@@ -2,7 +2,7 @@
 VigiaVia em tempo real: webcam, arquivo de vídeo ou stream RTSP (câmera de ônibus, viatura,
 caminhão de lixo ou celular no painel).
 
-Pipeline por quadro:  captura -> YOLO (detecção) -> ByteTrack (rastreamento) ->
+Pipeline por quadro:  captura -> YOLO (detecção) -> BoT-SORT (rastreamento, configs/rastreador.yaml) ->
 severidade + zona de trajetória -> HUD de realidade aumentada -> eventos.
 
 Cada buraco ÚNICO (trilha confirmada em >= N quadros com confiança >= limiar) vira UM evento,
